@@ -1,0 +1,62 @@
+import User from "../models/user.model.js";
+import jwt from "jsonwebtoken";
+
+
+
+
+
+
+const sendOTP = async (req, res) => {
+    try {
+        const { phone } = req.body;
+        if (!phone) {
+            return res.status(400).json({ message: "Phone number is required" });
+        }
+
+        let user = await User.findOne({ phone });
+        if (!user) {
+            user = new User({ phone });
+            await user.save();
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const token = jwt.sign({ id: user._id, otp }, process.env.JWT_SECRET, { expiresIn: '5m' });
+        console.log(`OTP for ${phone}: ${otp}`); // For testing purposes, log the OTP to the console
+
+        // Here you would send the OTP to the user's phone number using an SMS service
+
+        res.status(200).json({ message: "OTP sent successfully", token });
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+};
+
+const verifyOTP = async (req, res) => {
+    try {
+        const { token, otp } = req.body;
+        if (!token || !otp) {
+            return res.status(400).json({ message: "Token and OTP are required" });
+        }
+        
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        if (decoded.otp !== otp) {
+            return res.status(400).json({ message: "Invalid OTP" });
+        }
+
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        user.accessToken = accessToken;
+        await user.save();
+
+        res.status(200).json({ message: "OTP verified successfully", accessToken });
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+};
+
+export { sendOTP, verifyOTP };
