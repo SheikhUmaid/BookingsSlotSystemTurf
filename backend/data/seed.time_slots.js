@@ -2,15 +2,81 @@ import "dotenv/config";
 import mongoose from "mongoose";
 import timeSlot from "../models/time_slot.model.js";
 
+// const timeSlotSchema = mongoose.Schema({
+//     start_time:{
+//         type: String,
+//         required:true
+//     },
+//     end_time:{
+//         type: String,
+//         required: true
+//     },
+//     category:{
+//         type:String,
+//         enum:["Morning Sessions", "Afternoon Sessions", "Floodlit Evening", "Late Night"],
+//         required:true
+//     },
+//     price:{
+//         type:Number,
+//         required:true
+//     }
+// })
+
 const timeSlots = [
-  { start_time: "09:00", end_time: "10:00" },
-  { start_time: "10:00", end_time: "11:00" },
-  { start_time: "11:00", end_time: "12:00" },
-  { start_time: "12:00", end_time: "13:00" },
-  { start_time: "13:00", end_time: "14:00" },
-  { start_time: "14:00", end_time: "15:00" },
-  { start_time: "15:00", end_time: "16:00" },
-  { start_time: "16:00", end_time: "17:00" },
+    {
+        start_time: "06:00",
+        end_time: "08:00",
+        category: "Morning Sessions",
+        price: 1000
+    },
+    {
+        start_time: "08:00",
+        end_time: "10:00",
+        category: "Morning Sessions",
+        price: 1000
+    },
+    {
+        start_time: "10:00",
+        end_time: "12:00",
+        category: "Morning Sessions",
+        price: 1000
+    },
+    {
+        start_time: "12:00",
+        end_time: "14:00",
+        category: "Afternoon Sessions",
+        price: 1200
+    },
+    {
+        start_time: "14:00",
+        end_time: "16:00",
+        category: "Afternoon Sessions",
+        price: 1200
+    },
+    {
+        start_time: "16:00",
+        end_time: "18:00",
+        category: "Floodlit Evening",
+        price: 1500
+    },
+    {
+        start_time: "18:00",
+        end_time: "20:00",
+        category: "Floodlit Evening",
+        price: 1500
+    },
+    {
+        start_time: "20:00",
+        end_time: "22:00",
+        category: "Floodlit Evening",
+        price: 1500
+    },
+    {
+        start_time: "22:00",
+        end_time: "00:00",
+        category: "Late Night",
+        price: 1800
+    } 
 ];
 
 async function seedTimeSlots() {

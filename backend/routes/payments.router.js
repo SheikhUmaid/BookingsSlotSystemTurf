@@ -1,6 +1,6 @@
 import {createPaymentOrder, razorpayWebhook} from "../controllers/payment.controller.js";
 import express from "express";
-import { authenticate } from "../middlewares/auth.middleware.js";
+import  authMiddleware from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -12,6 +12,6 @@ router.post("/razorpay-webhook",express.raw({ type: "application/json" }), razor
 router.use(express.json()); // Middleware to parse JSON for subsequent routes
 
 
-router.post("/create-order", authenticate, createPaymentOrder);
+router.post("/create-order", authMiddleware, createPaymentOrder);
 
 export default router;

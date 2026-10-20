@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Booking from "../models/Booking.js";
+import Booking from "../models/booking.model.js";
 import razorpay from "../config/razorpay.config.js";
 import crypto from "node:crypto";
 

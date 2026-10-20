@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import Booking from "./models/Booking.js";
+import Booking from "../models/booking.model.js";
 
 // Run every minute
 cron.schedule("* * * * *", async () => {
