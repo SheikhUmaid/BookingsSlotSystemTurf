@@ -9,14 +9,6 @@ const serviceSchema = mongoose.Schema({
         type: String,
         required: true
     }, 
-    price:{
-        type: Number,
-        required: true
-    },
-    eveningPrice:{
-        type: Number,
-        required: true
-    },
     icon:{
         type: String,
         required: true

@@ -27,6 +27,7 @@ const sendOTP = async (req, res) => {
 
         res.status(200).json({ message: "OTP sent successfully", token });
     } catch (error) {
+        console.log(error.message)
         res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
@@ -49,10 +50,17 @@ const verifyOTP = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '180d' });
         user.accessToken = accessToken;
         await user.save();
 
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 180 * 24 * 60 * 60 * 1000, // 180 days
+        });
+        
         res.status(200).json({ message: "OTP verified successfully", accessToken });
     } catch (error) {
         res.status(500).json({ message: "Internal server error", error: error.message });

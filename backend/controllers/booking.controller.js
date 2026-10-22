@@ -105,9 +105,24 @@ export const createBooking = async (req, res) => {
         }
 
         // 10. Calculate the price on the backend.
-        // Assumption: service price is charged per selected time slot.
-        const totalPayable =
-            serviceDetails.price * time_slots.length;
+        //TODO: Test pending.
+        const result = await TimeSlot.aggregate([
+            {
+                $match: {
+                    _id: { $in: time_slots }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalPayable: { $sum: "$price" }
+                }
+            }
+        ]);
+
+        const totalPayable = result[0]?.totalPayable ?? 0;
+
+
 
         // 11. Create one booking containing multiple slots
         // All selected slots belong to the same date.

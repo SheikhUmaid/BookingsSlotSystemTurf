@@ -13,10 +13,8 @@ export const useSports = () => {
                 setSports(response.data);
             } catch (err) {
                 setError(err);
-                console.error('Error fetching sports:', err);
             } finally {
                 setLoading(false);
-                console.log('Sports data fetched:', sports);
             }
         })();
 

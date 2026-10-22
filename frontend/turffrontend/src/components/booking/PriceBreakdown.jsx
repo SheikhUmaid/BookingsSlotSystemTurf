@@ -4,8 +4,8 @@ export default function PriceBreakdownModal({
     isOpen,
     onClose,
     slotPrice = 1400,
-    floodlightFee = 30,
-    convenienceFee = 19,
+    floodlightFee = 0,
+    convenienceFee = 0,
 }) {
     useEffect(() => {
         if (!isOpen) return;
@@ -25,7 +25,7 @@ export default function PriceBreakdownModal({
 
     if (!isOpen) return null;
 
-    const total = slotPrice + floodlightFee + convenienceFee;
+    const total = slotPrice;
 
     const formatPrice = (amount) =>
         `₹${amount.toLocaleString('en-IN')}`;

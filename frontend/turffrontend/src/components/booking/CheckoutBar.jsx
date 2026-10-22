@@ -4,9 +4,8 @@ import { useMemo } from "react";
 export default function CheckoutBar({
     slotPrice = 1400,
     fee = 49,
-    date = "Thu, 19 Oct",
-    slot = "07:00 – 08:00 PM",
-    pitch = "Pitch A",
+    date = "",
+    pitch = "",
     onDetailsClick,
     onProceed,
     isProcessing = false,
@@ -40,7 +39,7 @@ export default function CheckoutBar({
                         </div>
 
                         <p className="text-[11px] text-primary font-medium truncate mt-1">
-                            {date} • {slot.split(" – ")[0]} • {pitch}
+                            {date} • {pitch}
                         </p>
                     </div>
 

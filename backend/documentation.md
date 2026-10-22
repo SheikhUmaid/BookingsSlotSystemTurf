@@ -5,26 +5,28 @@ Comprehensive technical documentation for the Turf & Venue Booking System backen
 ---
 
 ## Table of Contents
-1. [System Overview & Architecture](#1-system-overview--architecture)
+
+1. [System Overview &amp; Architecture](#1-system-overview--architecture)
 2. [Environment Configuration](#2-environment-configuration)
-3. [Database Models & Schemas](#3-database-models--schemas)
-4. [Authentication & Authorization](#4-authentication--authorization)
+3. [Database Models &amp; Schemas](#3-database-models--schemas)
+4. [Authentication &amp; Authorization](#4-authentication--authorization)
 5. [Complete API Reference](#5-complete-api-reference)
    - [Auth Endpoints](#auth-endpoints-apiauth)
    - [Services Endpoints](#services-endpoints-apiservices)
    - [Time Slots Endpoints](#time-slots-endpoints-apitime-slots)
    - [Bookings Endpoints](#bookings-endpoints-apibookings)
    - [Payments Endpoints](#payments-endpoints-apipayments)
-6. [Payment & Webhook Architecture](#6-payment--webhook-architecture)
-7. [Background Tasks & Automation](#7-background-tasks--automation)
+6. [Payment &amp; Webhook Architecture](#6-payment--webhook-architecture)
+7. [Background Tasks &amp; Automation](#7-background-tasks--automation)
 8. [Database Seeding](#8-database-seeding)
-9. [Developer Notes & Bug Audits](#9-developer-notes--bug-audits)
+9. [Developer Notes &amp; Bug Audits](#9-developer-notes--bug-audits)
 
 ---
 
 ## 1. System Overview & Architecture
 
 ### Tech Stack
+
 - **Runtime**: Node.js (ES Modules `"type": "module"`)
 - **Web Framework**: Express.js 5 (`express: ^5.3.0`)
 - **Database**: MongoDB via Mongoose ODM (`mongoose: ^9.11.2`)
@@ -34,6 +36,7 @@ Comprehensive technical documentation for the Turf & Venue Booking System backen
 - **Security & Utils**: Native `node:crypto`, `bcrypt: ^6.0.0`, `dotenv: ^18.0.8`
 
 ### Directory Structure
+
 ```
 backend/
 ├── app.js                      # Express application setup & middleware mounting
@@ -74,15 +77,15 @@ backend/
 
 The backend reads environment variables via `dotenv/config`. These should be defined in a `.env` file in the root of the `backend/` directory:
 
-| Variable | Type | Required | Description | Example |
-| :--- | :--- | :--- | :--- | :--- |
-| `PORT` | Number | Optional | Port for the HTTP server to listen on. Defaults to `5000`. | `5000` |
-| `DATABASE_URL` | String | **Yes** | MongoDB connection string URI. | `mongodb://localhost:27017/booking_system` |
-| `JWT_SECRET` | String | **Yes** | Cryptographic secret for signing OTP and Access JWT tokens. | `super_secret_jwt_key_123` |
-| `RAZORPAY_KEY_ID` | String | **Yes** | Razorpay public key ID. | `rzp_test_Tphvjvz1YKTTQd` |
-| `RAZORPAY_KEY_SECRET` | String | **Yes** | Razorpay private API secret. | `Q5QtW0oamQWrtDSLxdbzfs4f` |
-| `RAZORPAY_WEBHOOK_SECRET` | String | **Yes** | Secret configured in the Razorpay Webhooks dashboard. | `my_webhook_secret_key` |
-| `PARTIAL_PAYMENT_PERCENT` | Number | Optional | Percentage required when partial payment is selected. Default `30`. | `30` |
+| Variable                    | Type   | Required      | Description                                                           | Example                                      |
+| :-------------------------- | :----- | :------------ | :-------------------------------------------------------------------- | :------------------------------------------- |
+| `PORT`                    | Number | Optional      | Port for the HTTP server to listen on. Defaults to `5000`.          | `5000`                                     |
+| `DATABASE_URL`            | String | **Yes** | MongoDB connection string URI.                                        | `mongodb://localhost:27017/booking_system` |
+| `JWT_SECRET`              | String | **Yes** | Cryptographic secret for signing OTP and Access JWT tokens.           | `super_secret_jwt_key_123`                 |
+| `RAZORPAY_KEY_ID`         | String | **Yes** | Razorpay public key ID.                                               | `rzp_test_Tphvjvz1YKTTQd`                  |
+| `RAZORPAY_KEY_SECRET`     | String | **Yes** | Razorpay private API secret.                                          | `Q5QtW0oamQWrtDSLxdbzfs4f`                 |
+| `RAZORPAY_WEBHOOK_SECRET` | String | **Yes** | Secret configured in the Razorpay Webhooks dashboard.                 | `my_webhook_secret_key`                    |
+| `PARTIAL_PAYMENT_PERCENT` | Number | Optional      | Percentage required when partial payment is selected. Default `30`. | `30`                                       |
 
 ---
 
@@ -139,6 +142,7 @@ erDiagram
 ### Schema Details
 
 #### `User` (`backend/models/user.model.js`)
+
 - `phone` (String, required): Mobile number used for OTP authentication.
 - `name` (String, optional): Full name of the user.
 - `email` (String, optional): Email address.
@@ -146,16 +150,19 @@ erDiagram
 - `role` (String, enum: `["user", "admin"]`, default: `"user"`).
 
 #### `Service` (`backend/models/service.model.js`)
+
 - `name` (String, required): Name of the facility/sport (e.g., `"Football Turf"`).
 - `description` (String, required): Detailed description.
 - `price` (Number, required): Standard rate per time slot.
 - `eveningPrice` (Number, required): Evening slot pricing rate.
 
 #### `TimeSlot` (`backend/models/time_slot.model.js`)
+
 - `start_time` (String, required): 24-hour time representation `"HH:mm"` (e.g., `"09:00"`).
 - `end_time` (String, required): 24-hour time representation `"HH:mm"` (e.g., `"10:00"`).
 
 #### `Booking` (`backend/models/booking.model.js`)
+
 - `user` (ObjectId, ref: `User`, required): The booking user.
 - `service` (ObjectId, ref: `Service`, required): The reserved service.
 - `time_slots` (Array of ObjectId, ref: `TimeSlot`, required): One or more reserved slots.
@@ -205,10 +212,13 @@ sequenceDiagram
 ```
 
 ### Passing Authentication Header
+
 Protected routes require the HTTP `Authorization` header:
+
 ```http
 Authorization: Bearer <accessToken>
 ```
+
 *(Alternatively, the middleware checks `req.cookies.token` if cookie parser is enabled).*
 
 ---
@@ -222,6 +232,7 @@ Base URL: `http://localhost:5000` (or configured `PORT`)
 ### Auth Endpoints (`/api/auth`)
 
 #### 1. Send OTP
+
 Generates a 6-digit one-time password and returns a temporary token valid for 5 minutes. If a user with the provided phone does not exist, a new user record is created.
 
 - **Method**: `POST`
@@ -231,9 +242,10 @@ Generates a 6-digit one-time password and returns a temporary token valid for 5 
   - `Content-Type: application/json`
 
 **Request Body**:
-| Field | Type | Required | Description |
-| :--- | :--- | :--- | :--- |
-| `phone` | String | Yes | User phone number (e.g. `"9876543210"`). |
+
+| Field     | Type   | Required | Description                                |
+| :-------- | :----- | :------- | :----------------------------------------- |
+| `phone` | String | Yes      | User phone number (e.g. `"9876543210"`). |
 
 ```json
 {
@@ -242,6 +254,7 @@ Generates a 6-digit one-time password and returns a temporary token valid for 5 
 ```
 
 **Expected Responses**:
+
 - **`200 OK`**:
   ```json
   {
@@ -264,6 +277,7 @@ Generates a 6-digit one-time password and returns a temporary token valid for 5 
   ```
 
 **cURL Example**:
+
 ```bash
 curl -X POST http://localhost:5000/api/auth/send-otp \
   -H "Content-Type: application/json" \
@@ -273,6 +287,7 @@ curl -X POST http://localhost:5000/api/auth/send-otp \
 ---
 
 #### 2. Verify OTP
+
 Verifies the submitted 6-digit OTP against the signed temporary JWT. Upon successful verification, generates a 1-hour session `accessToken`, persists it into the user document, and returns it.
 
 - **Method**: `POST`
@@ -282,10 +297,11 @@ Verifies the submitted 6-digit OTP against the signed temporary JWT. Upon succes
   - `Content-Type: application/json`
 
 **Request Body**:
-| Field | Type | Required | Description |
-| :--- | :--- | :--- | :--- |
-| `token` | String | Yes | Temporary JWT token returned from `/api/auth/send-otp`. |
-| `otp` | String | Yes | 6-digit OTP code (e.g. `"123456"`). |
+
+| Field     | Type   | Required | Description                                               |
+| :-------- | :----- | :------- | :-------------------------------------------------------- |
+| `token` | String | Yes      | Temporary JWT token returned from `/api/auth/send-otp`. |
+| `otp`   | String | Yes      | 6-digit OTP code (e.g. `"123456"`).                     |
 
 ```json
 {
@@ -295,7 +311,9 @@ Verifies the submitted 6-digit OTP against the signed temporary JWT. Upon succes
 ```
 
 **Expected Responses**:
+
 - **`200 OK`**:
+
   ```json
   {
     "message": "OTP verified successfully",
@@ -303,11 +321,13 @@ Verifies the submitted 6-digit OTP against the signed temporary JWT. Upon succes
   }
   ```
 - **`400 Bad Request`**:
+
   ```json
   {
     "message": "Token and OTP are required"
   }
   ```
+
   *or*
   ```json
   {
@@ -315,12 +335,14 @@ Verifies the submitted 6-digit OTP against the signed temporary JWT. Upon succes
   }
   ```
 - **`404 Not Found`**:
+
   ```json
   {
     "message": "User not found"
   }
   ```
 - **`500 Internal Server Error`**:
+
   ```json
   {
     "message": "Internal server error",
@@ -329,6 +351,7 @@ Verifies the submitted 6-digit OTP against the signed temporary JWT. Upon succes
   ```
 
 **cURL Example**:
+
 ```bash
 curl -X POST http://localhost:5000/api/auth/verify-otp \
   -H "Content-Type: application/json" \
@@ -343,6 +366,7 @@ curl -X POST http://localhost:5000/api/auth/verify-otp \
 ### Services Endpoints (`/api/services`)
 
 #### 1. Create a Service
+
 Creates a new sport or facility service offering.
 
 - **Method**: `POST`
@@ -352,12 +376,13 @@ Creates a new sport or facility service offering.
   - `Content-Type: application/json`
 
 **Request Body**:
-| Field | Type | Required | Description |
-| :--- | :--- | :--- | :--- |
-| `name` | String | Yes | Service title (e.g. `"Football Turf (7v7)"`). |
-| `description` | String | Yes | Description of amenities and turf details. |
-| `price` | Number | Yes | Base rate in INR per time slot. |
-| `eveningPrice` | Number | Yes | Evening/peak rate in INR. |
+
+| Field            | Type   | Required | Description                                     |
+| :--------------- | :----- | :------- | :---------------------------------------------- |
+| `name`         | String | Yes      | Service title (e.g. `"Football Turf (7v7)"`). |
+| `description`  | String | Yes      | Description of amenities and turf details.      |
+| `price`        | Number | Yes      | Base rate in INR per time slot.                 |
+| `eveningPrice` | Number | Yes      | Evening/peak rate in INR.                       |
 
 ```json
 {
@@ -369,6 +394,7 @@ Creates a new sport or facility service offering.
 ```
 
 **Expected Responses**:
+
 - **`201 Created`**:
   ```json
   {
@@ -388,6 +414,7 @@ Creates a new sport or facility service offering.
   ```
 
 **cURL Example**:
+
 ```bash
 curl -X POST http://localhost:5000/api/services \
   -H "Content-Type: application/json" \
@@ -402,6 +429,7 @@ curl -X POST http://localhost:5000/api/services \
 ---
 
 #### 2. Get All Services
+
 Fetches the full catalogue of available sports and services.
 
 - **Method**: `GET`
@@ -410,6 +438,7 @@ Fetches the full catalogue of available sports and services.
 - **Headers**: None
 
 **Expected Responses**:
+
 - **`200 OK`**:
   ```json
   [
@@ -439,6 +468,7 @@ Fetches the full catalogue of available sports and services.
   ```
 
 **cURL Example**:
+
 ```bash
 curl -X GET http://localhost:5000/api/services
 ```
@@ -446,17 +476,18 @@ curl -X GET http://localhost:5000/api/services
 ---
 
 #### 3. Delete a Service
+
 Removes an existing service from the database by ID.
 
 - **Method**: `DELETE`
 - **Endpoint**: `/api/services/:serviceId`
 - **Access**: Public *(Admin access recommended)*
-- **Path Parameters**:
-  | Parameter | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `serviceId` | String (ObjectId) | Yes | MongoDB ID of the service to delete. |
+- **Path Parameters**:| Parameter     | Type              | Required | Description                          |
+  | :------------ | :---------------- | :------- | :----------------------------------- |
+  | `serviceId` | String (ObjectId) | Yes      | MongoDB ID of the service to delete. |
 
 **Expected Responses**:
+
 - **`200 OK`**:
   ```json
   {
@@ -477,6 +508,7 @@ Removes an existing service from the database by ID.
   ```
 
 **cURL Example**:
+
 ```bash
 curl -X DELETE http://localhost:5000/api/services/67138b248a3c89bdf10e201a
 ```
@@ -486,6 +518,7 @@ curl -X DELETE http://localhost:5000/api/services/67138b248a3c89bdf10e201a
 ### Time Slots Endpoints (`/api/time-slots`)
 
 #### 1. Get All Time Slots
+
 Retrieves all configured baseline time slot definitions in the system.
 
 - **Method**: `GET`
@@ -494,6 +527,7 @@ Retrieves all configured baseline time slot definitions in the system.
 - **Headers**: None
 
 **Expected Responses**:
+
 - **`200 OK`**:
   ```json
   [
@@ -519,6 +553,7 @@ Retrieves all configured baseline time slot definitions in the system.
   ```
 
 **cURL Example**:
+
 ```bash
 curl -X GET http://localhost:5000/api/time-slots
 ```
@@ -526,20 +561,23 @@ curl -X GET http://localhost:5000/api/time-slots
 ---
 
 #### 2. Get Available Time Slots for a Date
-Returns all available time slots for a specific calendar date (`YYYY-MM-DD`). 
+
+Returns all available time slots for a specific calendar date (`YYYY-MM-DD`).
+
 - Excludes slots that belong to existing bookings that are **not cancelled** (`status != "cancelled"`).
 - If the queried date is **today** (calculated in `Asia/Kolkata` timezone), it automatically filters out slots that have already started.
-
 - **Method**: `GET`
 - **Endpoint**: `/api/time-slots/available/:date`
 - **Access**: Public
 - **Path Parameters**:
-  | Parameter | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `date` | String | Yes | Date in `YYYY-MM-DD` format (e.g. `2026-10-25`). |
+  | Parameter | Type   | Required | Description                                          |
+  | :-------- | :----- | :------- | :--------------------------------------------------- |
+  | `date`  | String | Yes      | Date in `YYYY-MM-DD` format (e.g. `2026-10-25`). |
 
 **Expected Responses**:
+
 - **`200 OK`**:
+
   ```json
   [
     {
@@ -557,11 +595,13 @@ Returns all available time slots for a specific calendar date (`YYYY-MM-DD`).
   ]
   ```
 - **`400 Bad Request`**:
+
   ```json
   {
     "message": "Date must be in YYYY-MM-DD format"
   }
   ```
+
   *or*
   ```json
   {
@@ -569,6 +609,7 @@ Returns all available time slots for a specific calendar date (`YYYY-MM-DD`).
   }
   ```
 - **`500 Internal Server Error`**:
+
   ```json
   {
     "message": "Failed to fetch available time slots"
@@ -576,6 +617,7 @@ Returns all available time slots for a specific calendar date (`YYYY-MM-DD`).
   ```
 
 **cURL Example**:
+
 ```bash
 curl -X GET http://localhost:5000/api/time-slots/available/2026-10-25
 ```
@@ -585,24 +627,27 @@ curl -X GET http://localhost:5000/api/time-slots/available/2026-10-25
 ### Bookings Endpoints (`/api/bookings`)
 
 #### 1. Create a Booking
-Reserves one or more time slots on a given date for a selected service. 
+
+Reserves one or more time slots on a given date for a selected service.
+
 - Prevents double bookings across identical dates and slots.
 - Automatically calculates `total_payable` as `service.price * time_slots.length`.
 - Sets an initial booking status of `"pending"` with an `expires_at` window of **5 minutes**.
-
 - **Method**: `POST`
 - **Endpoint**: `/api/bookings/create`
 - **Access**: Protected (`Authorization: Bearer <accessToken>`)
 - **Headers**:
+
   - `Authorization: Bearer <accessToken>`
   - `Content-Type: application/json`
 
 **Request Body**:
-| Field | Type | Required | Description |
-| :--- | :--- | :--- | :--- |
-| `service` | String (ObjectId) | Yes | Valid Service `_id`. |
-| `time_slots` | Array of Strings | Yes | Array of valid TimeSlot `_id` values (non-empty, unique). |
-| `date` | String | Yes | Date in `YYYY-MM-DD` format (e.g. `2026-10-25`). |
+
+| Field          | Type              | Required | Description                                                 |
+| :------------- | :---------------- | :------- | :---------------------------------------------------------- |
+| `service`    | String (ObjectId) | Yes      | Valid Service `_id`.                                      |
+| `time_slots` | Array of Strings  | Yes      | Array of valid TimeSlot `_id` values (non-empty, unique). |
+| `date`       | String            | Yes      | Date in `YYYY-MM-DD` format (e.g. `2026-10-25`).        |
 
 ```json
 {
@@ -616,6 +661,7 @@ Reserves one or more time slots on a given date for a selected service.
 ```
 
 **Expected Responses**:
+
 - **`201 Created`**:
   ```json
   {
@@ -666,6 +712,7 @@ Reserves one or more time slots on a given date for a selected service.
   ```
 
 **cURL Example**:
+
 ```bash
 curl -X POST http://localhost:5000/api/bookings/create \
   -H "Authorization: Bearer <YOUR_ACCESS_TOKEN>" \
@@ -680,6 +727,7 @@ curl -X POST http://localhost:5000/api/bookings/create \
 ---
 
 #### 2. Get User Bookings
+
 Retrieves all bookings made by the logged-in user.
 
 - **Method**: `GET`
@@ -687,12 +735,12 @@ Retrieves all bookings made by the logged-in user.
 - **Access**: Protected (`Authorization: Bearer <accessToken>`)
 - **Headers**:
   - `Authorization: Bearer <accessToken>`
-- **Path Parameters**:
-  | Parameter | Type | Required | Description |
-  | :--- | :--- | :--- | :--- |
-  | `userId` | String | Yes | ID of user whose bookings are requested. |
+- **Path Parameters**:| Parameter  | Type   | Required | Description                              |
+  | :--------- | :----- | :------- | :--------------------------------------- |
+  | `userId` | String | Yes      | ID of user whose bookings are requested. |
 
 **Expected Responses**:
+
 - **`200 OK`**:
   ```json
   [
@@ -723,7 +771,9 @@ Retrieves all bookings made by the logged-in user.
   }
   ```
 
+
 **cURL Example**:
+
 ```bash
 curl -X GET http://localhost:5000/api/bookings/my-bookings/67138a008a3c89bdf10e2005 \
   -H "Authorization: Bearer <YOUR_ACCESS_TOKEN>"
@@ -734,6 +784,7 @@ curl -X GET http://localhost:5000/api/bookings/my-bookings/67138a008a3c89bdf10e2
 ### Payments Endpoints (`/api/payments`)
 
 #### 1. Create Payment Order
+
 Creates an order with Razorpay for an active booking. Validates user ownership, expiration, and ensures an order hasn't already been created. Supports either full payment or partial payment.
 
 - **Method**: `POST`
@@ -744,10 +795,11 @@ Creates an order with Razorpay for an active booking. Validates user ownership, 
   - `Content-Type: application/json`
 
 **Request Body**:
-| Field | Type | Required | Description |
-| :--- | :--- | :--- | :--- |
-| `bookingId` | String (ObjectId) | Yes | Target booking `_id`. |
-| `paymentType` | String | Yes | Allowed values: `"full"` or `"partial"`. |
+
+| Field           | Type              | Required | Description                                  |
+| :-------------- | :---------------- | :------- | :------------------------------------------- |
+| `bookingId`   | String (ObjectId) | Yes      | Target booking `_id`.                      |
+| `paymentType` | String            | Yes      | Allowed values: `"full"` or `"partial"`. |
 
 ```json
 {
@@ -757,11 +809,13 @@ Creates an order with Razorpay for an active booking. Validates user ownership, 
 ```
 
 **Calculation Rules**:
+
 - Currency: `INR`
 - If `paymentType === "full"`: `amountPaise = booking.total_payable * 100`
 - If `paymentType === "partial"`: `amountPaise = Math.round(totalPaise * PARTIAL_PAYMENT_PERCENT / 100)`
 
 **Expected Responses**:
+
 - **`201 Created`**:
   ```json
   {
@@ -800,6 +854,7 @@ Creates an order with Razorpay for an active booking. Validates user ownership, 
   ```
 
 **cURL Example**:
+
 ```bash
 curl -X POST http://localhost:5000/api/payments/create-order \
   -H "Authorization: Bearer <YOUR_ACCESS_TOKEN>" \
@@ -813,6 +868,7 @@ curl -X POST http://localhost:5000/api/payments/create-order \
 ---
 
 #### 2. Razorpay Webhook Handler
+
 Receives server-to-server notifications from Razorpay for captured payments. Verifies the HMAC-SHA256 signature using `RAZORPAY_WEBHOOK_SECRET` against the raw byte stream body.
 
 - **Method**: `POST`
@@ -824,6 +880,7 @@ Receives server-to-server notifications from Razorpay for captured payments. Ver
 
 **Request Body**:
 Razorpay raw JSON event payload for `payment.captured`.
+
 ```json
 {
   "entity": "event",
@@ -848,6 +905,7 @@ Razorpay raw JSON event payload for `payment.captured`.
 ```
 
 **Expected Responses**:
+
 - **`200 OK`**:
   - Normal capture:
     ```json
@@ -913,6 +971,7 @@ sequenceDiagram
 ```
 
 ### Key Security & Correctness Features:
+
 1. **Raw Body Middleware**: The webhook route uses `express.raw({ type: "application/json" })` before any JSON parser to ensure signature verification operates on byte-identical bytes.
 2. **Timing-Safe Equal**: Signature verification uses `crypto.timingSafeEqual` to safeguard against timing attacks.
 3. **Idempotency**: Webhook events check `booking.payment_id === payment.id` to prevent double-crediting if Razorpay re-delivers an event.
@@ -923,6 +982,7 @@ sequenceDiagram
 ## 7. Background Tasks & Automation
 
 ### Booking Expiration Cron (`backend/services/cron.service.js`)
+
 - **Schedule**: Every minute (`* * * * *`)
 - **Action**: Queries bookings with:
   ```javascript
@@ -944,6 +1004,7 @@ npm run seed:time_slots
 ```
 
 This runs `backend/data/seed.time_slots.js` which connects to `DATABASE_URL` and seeds the `TimeSlot` collection:
+
 - `09:00` - `10:00`
 - `10:00` - `11:00`
 - `11:00` - `12:00`
@@ -961,15 +1022,19 @@ During review of the codebase, several discrepancies and bugs were identified th
 
 > [!WARNING]
 > ### 1. Missing Global `express.json()` Middleware
+>
 > In `backend/app.js`:
+>
 > ```javascript
 > // app.use(express.json()); // Currently commented out!
 > ```
+>
 > `paymentsRouter` mounts `router.use(express.json())` internally, but `authRoutes`, `bookingRoutes`, and `serviceRoutes` do not have `express.json()` applied! As a result, `req.body` will be `undefined` for `POST /api/auth/*`, `POST /api/bookings/create`, and `POST /api/services`.
 > **Fix**: Uncomment `app.use(express.json())` in `app.js` **after** the raw webhook handler or inside individual router files.
 
 > [!WARNING]
 > ### 2. Mismatched Import/Export for `authMiddleware`
+>
 > - `backend/middlewares/auth.middleware.js` exports:
 >   ```javascript
 >   export default authMiddleware;
@@ -978,7 +1043,9 @@ During review of the codebase, several discrepancies and bugs were identified th
 >   ```javascript
 >   import { authenticate } from "../middlewares/auth.middleware.js"; // FAILS at runtime!
 >   ```
+>
 > **Fix**: Change the import in `payments.router.js` to:
+>
 > ```javascript
 > import authMiddleware from "../middlewares/auth.middleware.js";
 > // and use authMiddleware in router.post("/create-order", authMiddleware, createPaymentOrder);
@@ -986,7 +1053,9 @@ During review of the codebase, several discrepancies and bugs were identified th
 
 > [!WARNING]
 > ### 3. Inconsistent Model File Names in Imports
+>
 > Several files import `Booking.js` with incorrect capitalization or missing `.model` suffix:
+>
 > - `backend/services/cron.service.js`:
 >   ```javascript
 >   import Booking from "./models/Booking.js"; // Wrong path and file name!
@@ -997,19 +1066,22 @@ During review of the codebase, several discrepancies and bugs were identified th
 >   import Booking from "../models/Booking.js"; // Wrong file name!
 >   // Correct: import Booking from "../models/booking.model.js";
 >   ```
+>
 > On Linux file systems (like standard production Linux servers), case-sensitive resolution causes this to throw `MODULE_NOT_FOUND`.
 
 > [!NOTE]
 > ### 4. `getMyBookings` Field Name Mismatches
+>
 > In `backend/controllers/booking.controller.js`:
+>
 > ```javascript
 > const myBookings = await Booking.find({ userId }).populate('timeSlotId');
 > ```
 > In `booking.model.js`, the schema defines `user` (not `userId`) and `time_slots` (not `timeSlotId`).
 > **Fix**:
+>
 > ```javascript
 > const myBookings = await Booking.find({ user: userId })
 >   .populate('time_slots')
 >   .populate('service');
 > ```
-

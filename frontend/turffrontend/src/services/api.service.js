@@ -50,13 +50,13 @@ export const fetchSports = () => {
   return authAPI.get("/services/");
 };
 
-export const fetchAllTimeSlots = (date, serviceId) => {
+export const fetchAllTimeSlots = () => {
   return authAPI.get('/time-slots/');
 };
 
 
-export const fetchAvailableTimeSlots = (date) => {
-  return authAPI.get(`/time-slots/available/${date}`);
+export const fetchAvailableTimeSlots = (date, config = {}) => {
+  return authAPI.get(`/time-slots/available/${date}`, config);
 };
 
 export const fetchMyBookings = () => {
