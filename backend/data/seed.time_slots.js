@@ -2,25 +2,6 @@ import "dotenv/config";
 import mongoose from "mongoose";
 import timeSlot from "../models/time_slot.model.js";
 
-// const timeSlotSchema = mongoose.Schema({
-//     start_time:{
-//         type: String,
-//         required:true
-//     },
-//     end_time:{
-//         type: String,
-//         required: true
-//     },
-//     category:{
-//         type:String,
-//         enum:["Morning Sessions", "Afternoon Sessions", "Floodlit Evening", "Late Night"],
-//         required:true
-//     },
-//     price:{
-//         type:Number,
-//         required:true
-//     }
-// })
 
 const timeSlots = [
     {

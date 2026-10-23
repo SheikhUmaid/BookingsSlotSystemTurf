@@ -6,6 +6,7 @@ import bookingRoutes from "./routes/booking.router.js";
 import serviceRoutes from "./routes/service.router.js";
 import "./services/cron.service.js"; // Import the cron service to start the scheduled tasks
 import paymentsRouter from "./routes/payments.router.js";
+import couponsRouter from "./routes/coupons.router.js";
 import cors from "cors";
 import morgan from "morgan";
 
@@ -40,6 +41,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/time-slots", timeSlotRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/services", serviceRoutes);
+app.use("/api/coupons", couponsRouter);
 
 
 export default app;

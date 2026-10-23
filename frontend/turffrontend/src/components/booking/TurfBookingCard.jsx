@@ -46,7 +46,7 @@ export default function TurfBookingCard() {
         />
 
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/70 to-surface/30" />
+        <div className="absolute inset-0 bg-linear-to-t from-surface via-surface/70 to-surface/30" />
 
         {/* Venue badges */}
         <div className="absolute top-2.5 left-4 flex items-center gap-1.5">

@@ -1,13 +1,14 @@
 import Booking from "../models/booking.model.js";
 import Service from "../models/service.model.js";
 import TimeSlot from "../models/time_slot.model.js";
+import Coupon from "../models/coupon.model.js";
 import mongoose from "mongoose";
 
 
 export const createBooking = async (req, res) => {
     try {
         // 1. Extract booking details from the request body
-        const { time_slots, date, service } = req.body;
+        const { time_slots, date, service, coupon_code } = req.body;
         const user = req.user.id;
 
         // 2. Validate that at least one time slot is selected
@@ -106,21 +107,60 @@ export const createBooking = async (req, res) => {
 
         // 10. Calculate the price on the backend.
         //TODO: Test pending.
-        const result = await TimeSlot.aggregate([
-            {
-                $match: {
-                    _id: { $in: time_slots }
-                }
-            },
-            {
-                $group: {
-                    _id: null,
-                    totalPayable: { $sum: "$price" }
-                }
-            }
-        ]);
+        const slots = await TimeSlot.find({
+            _id: { $in: time_slots }
+        }).select("price");
 
-        const totalPayable = result[0]?.totalPayable ?? 0;
+        // console.log(result)
+        let totalPayable = slots.reduce(
+            (total, slot) => total + slot.price,
+            0
+        );
+
+        if (coupon_code) {
+            if (typeof coupon_code !== "string") {
+                return res.status(400).json({
+                    message: "Invalid coupon code."
+                });
+            }
+
+            const coupon = await Coupon.findOne({ code: coupon_code });
+
+            if (!coupon) {
+                return res.status(404).json({
+                    message: "Coupon not found."
+                });
+            }
+
+            const currentDate = new Date();
+            if (currentDate < coupon.valid_from || currentDate > coupon.valid_until) {
+                return res.status(400).json({
+                    message: "Coupon is not valid at this time."
+                });
+            }
+
+            if (coupon.usage_limit !== null && coupon.used_count >= coupon.usage_limit) {
+                return res.status(400).json({
+                    message: "Coupon usage limit has been reached."
+                });
+            }
+
+            if (coupon.active === false) {
+                return res.status(400).json({
+                    message: "Coupon is not active."
+                });
+            }
+
+            // Apply the discount
+            const discountAmount = (totalPayable * coupon.discount_percentage) / 100;
+            totalPayable -= discountAmount;
+
+            // Increment the used count of the coupon
+            coupon.used_count += 1;
+            await coupon.save();
+
+        }
+
 
 
 

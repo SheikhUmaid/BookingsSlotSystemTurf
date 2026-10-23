@@ -5,6 +5,7 @@ import DateSelector from "../components/booking/SelectDate";
 import TimeSlotSelection from "../components/booking/SelectTimeSlot";
 import PriceBreakdownModal from "../components/booking/PriceBreakdown";
 import CheckoutBar from "../components/booking/CheckoutBar";
+import CouponCode from "../components/booking/CouponCode";
 import { useSports } from "../hooks/useSports";
 import { useRef, useState } from "react";
 import LoginModal from "../components/shared/LoginModal";
@@ -23,6 +24,8 @@ export default function BookPage() {
     const serviceRef = useRef(null);
     const timeSlotRef = useRef(null);
     const [isLoggedInn, setIsLoggedIn] = useState(isLoggedIn())
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [couponLoading, setCouponLoading] = useState(false);
     // get today's iso date
     const today = new Date();
     const isoDate = today.toISOString().split("T")[0];
@@ -68,18 +71,18 @@ export default function BookPage() {
     function onProceed() {
         setIsLoggedIn(isLoggedIn());
 
-        if (jsonData.service ===null) {
+        if (jsonData.service === null) {
             //sroll to the component
             serviceRef.current?.scrollIntoView({
                 behavior: "smooth",
                 block: "center",
             });
             toast.error("Please select game")
-            
+
             return;
         }
         if (!jsonData.time_slots?.length) {
-            
+
             timeSlotRef.current?.scrollIntoView({
                 behavior: "smooth",
                 block: "center",
@@ -88,16 +91,16 @@ export default function BookPage() {
             return;
         }
 
-        if(!isLoggedInn){
+        if (!isLoggedInn) {
             setLoginModalOpenState(!loginModalOpenState)
             return;
         }
 
-        console.log("proceeeding...")
+        setIsProcessing(true);
     }
 
 
-    
+
     return (
 
         <div className="min-h-screen bg-[#111315]">
@@ -116,26 +119,43 @@ export default function BookPage() {
                 }} />
             </div>
 
-            <CheckoutBar date={date} pitch="Pitch A" slotPrice={price} fee={0} onDetailsClick={() => setShowBreakdown(true)} onProceed={()=>{onProceed();}} />
+            <CheckoutBar isProcessing={isProcessing} date={date} pitch="Pitch A" slotPrice={price} fee={0} onDetailsClick={() => setShowBreakdown(true)} onProceed={() => { onProceed(); }} />
 
-            <div className="h-16"></div>
+
+            <CouponCode
+                appliedCoupon={appliedCoupon}
+                loading={couponLoading}
+                onApply={async (code) => {
+                    setCouponLoading(true);
+
+                    try {
+                        const res = await authAPI.post("/coupons/apply/", {
+                            code,
+                            time_slots: jsonData.time_slots,
+                        });
+
+                        setAppliedCoupon(res.data.coupon);
+                        // Update your booking total from the server response.
+                    } finally {
+                        setCouponLoading(false);
+                    }
+                }}
+                onRemove={async () => {
+                    setAppliedCoupon(null);
+                    // Recalculate the original booking total.
+                }}
+            />
+
+
+            
+
+
+            <div className="h-20"></div>
 
             <PriceBreakdownModal isOpen={showBreakdown} onClose={() => setShowBreakdown(false)} slotPrice={[price]} />
 
-            <LoginModal
-        isOpen={loginModalOpenState}
-        onClose={() => setLoginModalOpenState(false)}
-        onSendOtp={async (phone) => {
-          // Replace with your API request.
-          // Example: await api.post("/auth/send-otp", { phone });
-          console.log("Send OTP to:", phone);
-        }}
-        onVerifyOtp={async (phone, otp) => {
-          // Replace with your API request.
-          // Example: await api.post("/auth/verify-otp", { phone, otp });
-          console.log("Verify:", phone, otp);
-        }}
-      />
+            <LoginModal isOpen={loginModalOpenState} onClose={() => setLoginModalOpenState(false)} />
+            
         </div>
 
 
