@@ -1,0 +1,306 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_stack" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..900;1,300..900&amp;family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#121416;color:#e2e2e5;}body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}
+/* Custom subtle micro-animations */
+@keyframes checkPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes shakeSlot {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.check-pop {
+  animation: checkPop 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+.shake-anim {
+  animation: shakeSlot 0.3s ease-in-out;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface": "#121416",
+        "surface-container-lowest": "#0c0e10",
+        "surface-container-low": "#1a1c1e",
+        "surface-container": "#1e2022",
+        "surface-container-high": "#282a2c",
+        "surface-container-highest": "#333537",
+        "surface-bright": "#38393c",
+        "on-surface": "#e2e2e5",
+        "on-surface-variant": "#a6b3ab",
+        "primary": "#4ade80",
+        "primary-container": "#15803d",
+        "on-primary": "#052e16",
+        "outline": "#4b5563",
+        "outline-variant": "#2b3237",
+        "error": "#ef4444"
+      },
+      fontFamily: {
+        "headline-lg": ["Space Grotesk", "sans-serif"],
+        "headline-sm": ["Space Grotesk", "sans-serif"],
+        "body-md": ["Hanken Grotesk", "sans-serif"],
+        "body-sm": ["Hanken Grotesk", "sans-serif"],
+        "label-caps": ["Space Grotesk", "sans-serif"]
+      }
+    }
+  }
+};</script></head><body class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col selection:bg-primary selection:text-on-primary antialiased"><header class="fixed top-0 w-full z-40 bg-surface/95 backdrop-blur-md border-b border-white/10 pt-safe transition-colors duration-200"><div class="h-14 px-4 flex items-center justify-between"><div class="flex items-center gap-2.5"><button aria-label="Return to Overview" class="w-9 h-9 -ml-1 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container-high active:scale-95 transition-all" onclick="history.back()"><span class="material-symbols-outlined text-[20px]">arrow_back</span></button><div class="flex flex-col"><span class="font-label-caps text-[11px] font-semibold tracking-wider text-primary uppercase leading-tight">Strikers Yard</span><span class="text-[12px] text-on-surface-variant font-medium leading-tight">Downtown Arena</span></div></div><div class="flex items-center gap-1.5"><a aria-label="Phone Concierge Support" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high active:scale-95 transition-all" href="tel:+18005550199"><span class="material-symbols-outlined text-[20px]">support_agent</span></a><a aria-label="Club Account" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high active:scale-95 transition-all" href="#"><div class="w-7 h-7 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center"><span class="material-symbols-outlined text-[17px]">person</span></div></a></div></div></header><main class="flex-1 flex flex-col relative w-full pt-14 pb-safe bg-surface"><div class="flex flex-col w-full text-on-surface">
+<!-- Compact Refined Hero Banner -->
+<section class="relative w-full overflow-hidden bg-surface-container-lowest border-b border-white/5"><div class="relative w-full h-36 overflow-hidden"><img alt="Downtown Arena floodlit turf at twilight" class="w-full h-full object-cover object-center" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCd7-AZ52XPVXBpoSexcVVphhCQhIPv4i32Qm3Xu7bgh9eT_q_jC_gBlZiK_ov5m3cnfjoGQey1wj0IEKFKGTyxbXxJiCFkQuQ_5B4kVWUPPAqht86K6xgzadjNGJyPj6FgLHoGmkHS1WqcF-VikQUBt-wb68OnIZSIFZCOL6laZ_evfxufqjkBp51m_TgROLb22aotILp43wOS609xAiuYTDeEG6quYyUtlVqCoVV8TQiflydaR90LBw"><div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/70 to-surface/30"></div><div class="absolute top-2.5 left-4 flex items-center gap-1.5"><span class="px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-[10px] font-label-caps uppercase tracking-wider text-primary border border-primary/30 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span>Floodlit 4G</span><span class="px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-[10px] text-on-surface-variant border border-white/10">Pavilion B</span></div><div class="absolute bottom-2.5 left-4 right-4 flex items-end justify-between"><div><div class="text-[11px] text-on-surface-variant font-medium flex items-center gap-1.5 mb-0.5"><span class="">Downtown Arena</span><span class="">•</span><span class="">06:00 – Midnight</span></div><h2 class="font-headline-lg text-lg sm:text-xl font-bold tracking-tight text-white leading-tight">Reserve a Pitch</h2></div><div class="text-right"><span class="block text-[10px] uppercase tracking-wider text-on-surface-variant font-medium">Standard</span><span class="font-headline-sm text-sm sm:text-base text-primary font-bold">from ₹1,200<span class="text-[11px] text-on-surface-variant font-normal">/hr</span></span></div></div></div></section>
+<!-- Main Booking Workspace -->
+<div class="flex flex-col px-4 pt-4 pb-44 gap-5 max-w-xl mx-auto w-full">
+<!-- Sport Selection -->
+<div><div class="flex items-center justify-between mb-2"><span class="font-headline-sm text-xs uppercase tracking-wider font-semibold text-on-surface-variant">1. Choose Sport</span><span class="text-[11px] text-primary font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">sports</span>Gear Included</span></div><div class="grid grid-cols-2 gap-2.5"><button class="sport-btn group relative p-3 rounded-xl text-left transition-all bg-surface-container-high border-2 border-primary text-white" id="sport-cricket" onclick="toggleSport('cricket')" type="button"><div class="flex items-center justify-between mb-1.5"><div class="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center"><span class="material-symbols-outlined text-[20px]">sports_cricket</span></div><div class="selected-badge w-5 h-5 rounded-full bg-primary flex items-center justify-center text-on-primary check-pop"><span class="material-symbols-outlined text-[14px] font-bold">check</span></div></div><p class="font-headline-sm text-sm font-bold text-white tracking-wide">Box Cricket</p><p class="text-[11px] text-on-surface-variant mt-0.5 line-clamp-1">Custom netting &amp; turf matting</p></button><button class="sport-btn group relative p-3 rounded-xl text-left transition-all bg-surface-container-low border border-white/10 text-on-surface-variant hover:border-white/20 hover:text-white" id="sport-football" onclick="toggleSport('football')" type="button"><div class="flex items-center justify-between mb-1.5"><div class="w-8 h-8 rounded-lg bg-surface-container-highest text-on-surface-variant group-hover:text-white flex items-center justify-center"><span class="material-symbols-outlined text-[20px]">sports_soccer</span></div><div class="selected-badge hidden w-5 h-5 rounded-full bg-primary items-center justify-center text-on-primary check-pop"><span class="material-symbols-outlined text-[14px] font-bold">check</span></div></div><p class="font-headline-sm text-sm font-bold text-white tracking-wide">5v5 Football</p><p class="text-[11px] text-on-surface-variant mt-0.5 line-clamp-1">FIFA-grade 50mm turf</p></button></div></div>
+<!-- Pitch Enclosure Segmented Control -->
+<div><div class="flex items-center justify-between mb-2"><span class="font-headline-sm text-xs uppercase tracking-wider font-semibold text-on-surface-variant">2. Pitch Enclosure</span><span class="text-[11px] text-on-surface-variant font-medium" id="pitch-spec-label">North Cage • Matting Installed</span></div><div class="relative grid grid-cols-2 p-1 rounded-xl bg-surface-container-lowest border border-white/10 gap-1 overflow-hidden" id="pitch-container"><button class="pitch-segment relative z-10 py-2.5 px-3 rounded-lg text-center text-xs font-headline-sm transition-all text-on-primary font-bold bg-primary shadow-sm active:scale-98" id="pitch-btn-a" onclick="selectPitch('Pitch A', 'Main Cage', this)" type="button">Pitch A <span class="text-[11px] opacity-80 font-normal block sm:inline sm:ml-1">(Main Cage)</span></button><button class="pitch-segment relative z-10 py-2.5 px-3 rounded-lg text-center text-xs font-headline-sm transition-all text-on-surface-variant hover:text-white font-medium bg-transparent active:scale-98" id="pitch-btn-b" onclick="selectPitch('Pitch B', 'Agility Bay', this)" type="button">Pitch B <span class="text-[11px] opacity-60 font-normal block sm:inline sm:ml-1">(Agility Bay)</span></button></div></div>
+<!-- Date Strip & Quick Filter -->
+<div><div class="flex items-center justify-between mb-2"><span class="font-headline-sm text-xs uppercase tracking-wider font-semibold text-on-surface-variant">3. Select Date</span><div class="flex items-center gap-1" id="quick-filters"><button class="quick-pill px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors bg-surface-container-low text-on-surface-variant hover:text-white border border-white/5 active:scale-95" onclick="applyQuickDate('Wed, 18 Oct', this)" type="button">Today</button><button class="quick-pill active px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors bg-surface-container-highest text-white border border-white/10 shadow-sm active:scale-95" onclick="applyQuickDate('Thu, 19 Oct', this)" type="button">Tomorrow</button><button class="quick-pill px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors bg-surface-container-low text-on-surface-variant hover:text-white border border-white/5 active:scale-95" onclick="applyQuickDate('Sat, 21 Oct', this)" type="button">Weekend</button></div></div><div class="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar -mx-4 px-4 pr-6 select-none"><div class="flex-shrink-0 w-14 py-2 flex flex-col items-center rounded-xl bg-surface-container-lowest/60 opacity-30 border border-white/5 cursor-not-allowed select-none"><span class="font-label-caps text-[9px] uppercase tracking-wider text-outline">Mon</span><span class="font-headline-sm text-sm font-medium text-outline line-through">16</span><span class="text-[8px] text-outline mt-0.5 font-bold uppercase">Past</span></div><div class="flex-shrink-0 w-14 py-2 flex flex-col items-center rounded-xl bg-surface-container-lowest/60 opacity-30 border border-white/5 cursor-not-allowed select-none"><span class="font-label-caps text-[9px] uppercase tracking-wider text-outline">Tue</span><span class="font-headline-sm text-sm font-medium text-outline line-through">17</span><span class="text-[8px] text-outline mt-0.5 font-bold uppercase">Past</span></div><button class="date-chip flex-shrink-0 w-14 py-2 flex flex-col items-center rounded-xl bg-surface-container-low border border-white/10 hover:border-white/20 text-on-surface transition-all active:scale-95" data-date="Wed, 18 Oct" onclick="selectDate(this, 'Wed, 18 Oct')" type="button"><span class="font-label-caps text-[10px] uppercase text-on-surface-variant">Wed</span><span class="font-headline-sm text-base font-bold text-white">18</span><span class="text-[9px] font-semibold text-primary mt-0.5">Today</span></button><button class="date-chip active flex-shrink-0 w-14 py-2 flex flex-col items-center rounded-xl bg-primary text-on-primary border-2 border-primary shadow-sm transition-all active:scale-95" data-date="Thu, 19 Oct" onclick="selectDate(this, 'Thu, 19 Oct')" type="button"><span class="font-label-caps text-[10px] uppercase font-bold text-on-primary">Thu</span><span class="font-headline-sm text-base font-black text-on-primary">19</span><span class="text-[9px] font-bold text-on-primary mt-0.5">Active</span></button><button class="date-chip flex-shrink-0 w-14 py-2 flex flex-col items-center rounded-xl bg-surface-container-low border border-white/10 hover:border-white/20 text-on-surface transition-all active:scale-95" data-date="Fri, 20 Oct" onclick="selectDate(this, 'Fri, 20 Oct')" type="button"><span class="font-label-caps text-[10px] uppercase text-on-surface-variant">Fri</span><span class="font-headline-sm text-base font-bold text-white">20</span><span class="text-[9px] text-on-surface-variant mt-0.5">Open</span></button><button class="date-chip flex-shrink-0 w-14 py-2 flex flex-col items-center rounded-xl bg-surface-container-low border border-white/10 hover:border-white/20 text-on-surface transition-all active:scale-95" data-date="Sat, 21 Oct" onclick="selectDate(this, 'Sat, 21 Oct')" type="button"><span class="font-label-caps text-[10px] uppercase text-on-surface-variant">Sat</span><span class="font-headline-sm text-base font-bold text-white">21</span><span class="text-[9px] text-primary font-medium mt-0.5">Prime</span></button><button class="date-chip flex-shrink-0 w-14 py-2 flex flex-col items-center rounded-xl bg-surface-container-low border border-white/10 hover:border-white/20 text-on-surface transition-all active:scale-95" data-date="Sun, 22 Oct" onclick="selectDate(this, 'Sun, 22 Oct')" type="button"><span class="font-label-caps text-[10px] uppercase text-on-surface-variant">Sun</span><span class="font-headline-sm text-base font-bold text-white">22</span><span class="text-[9px] text-primary font-medium mt-0.5">Prime</span></button></div></div>
+<!-- Atomic 60-min Time Slots (Primary Interaction) -->
+<div class="space-y-5"><div><div class="flex items-center gap-2 mb-2"><span class="material-symbols-outlined text-[15px] text-primary">wb_twilight</span><h3 class="font-headline-sm text-xs font-semibold text-white uppercase tracking-wider">Morning Sessions (06:00 – 12:00)</h3><div class="flex-1 h-[1px] bg-white/10"></div></div><div class="grid grid-cols-2 gap-2"><button class="slot-card group p-3 rounded-xl bg-surface-container-low border border-white/10 hover:border-white/25 text-left transition-all active:scale-[0.98] flex flex-col justify-between h-[72px]" data-time="06:00 – 07:00 AM" onclick="selectSlot(this, '06:00 – 07:00 AM', 1200)" type="button"><div class="flex items-center justify-between w-full"><span class="font-headline-sm text-xs font-semibold text-white">06:00 – 07:00 AM</span></div><div class="flex items-center justify-between w-full mt-1"><span class="font-headline-sm text-sm font-bold text-primary">₹1,200</span><span class="slot-badge text-[10px] text-on-surface-variant font-medium">Available</span></div></button><div class="locked-card p-3 rounded-xl bg-surface-container-lowest border border-white/5 text-left flex flex-col justify-between h-[72px] opacity-35 cursor-not-allowed select-none" onclick="triggerLocked(this)"><div class="flex items-center justify-between w-full"><span class="font-headline-sm text-xs font-medium text-on-surface-variant line-through">07:00 – 08:00 AM</span><span class="material-symbols-outlined text-[14px] text-on-surface-variant">lock</span></div><div class="flex items-center justify-between w-full mt-1"><span class="font-headline-sm text-xs text-on-surface-variant">₹1,200</span><span class="text-[10px] uppercase font-bold text-on-surface-variant">Booked</span></div></div><button class="slot-card group p-3 rounded-xl bg-surface-container-low border border-white/10 hover:border-white/25 text-left transition-all active:scale-[0.98] flex flex-col justify-between h-[72px]" data-time="08:00 – 09:00 AM" onclick="selectSlot(this, '08:00 – 09:00 AM', 1200)" type="button"><div class="flex items-center justify-between w-full"><span class="font-headline-sm text-xs font-semibold text-white">08:00 – 09:00 AM</span></div><div class="flex items-center justify-between w-full mt-1"><span class="font-headline-sm text-sm font-bold text-primary">₹1,200</span><span class="slot-badge text-[10px] text-on-surface-variant font-medium">Available</span></div></button><button class="slot-card group p-3 rounded-xl bg-surface-container-low border border-white/10 hover:border-white/25 text-left transition-all active:scale-[0.98] flex flex-col justify-between h-[72px]" data-time="10:00 – 11:00 AM" onclick="selectSlot(this, '10:00 – 11:00 AM', 1200)" type="button"><div class="flex items-center justify-between w-full"><span class="font-headline-sm text-xs font-semibold text-white">10:00 – 11:00 AM</span></div><div class="flex items-center justify-between w-full mt-1"><span class="font-headline-sm text-sm font-bold text-primary">₹1,200</span><span class="slot-badge text-[10px] text-on-surface-variant font-medium">Available</span></div></button></div></div><div><div class="flex items-center gap-2 mb-2"><span class="material-symbols-outlined text-[15px] text-amber-400">light_mode</span><h3 class="font-headline-sm text-xs font-semibold text-white uppercase tracking-wider">Afternoon Sessions (12:00 – 17:00)</h3><div class="flex-1 h-[1px] bg-white/10"></div></div><div class="grid grid-cols-2 gap-2"><button class="slot-card group p-3 rounded-xl bg-surface-container-low border border-white/10 hover:border-white/25 text-left transition-all active:scale-[0.98] flex flex-col justify-between h-[72px]" data-time="12:00 – 01:00 PM" onclick="selectSlot(this, '12:00 – 01:00 PM', 1300)" type="button"><div class="flex items-center justify-between w-full"><span class="font-headline-sm text-xs font-semibold text-white">12:00 – 01:00 PM</span></div><div class="flex items-center justify-between w-full mt-1"><span class="font-headline-sm text-sm font-bold text-primary">₹1,300</span><span class="slot-badge text-[10px] text-on-surface-variant font-medium">Available</span></div></button><button class="slot-card group p-3 rounded-xl bg-surface-container-low border border-white/10 hover:border-white/25 text-left transition-all active:scale-[0.98] flex flex-col justify-between h-[72px]" data-time="02:00 – 03:00 PM" onclick="selectSlot(this, '02:00 – 03:00 PM', 1300)" type="button"><div class="flex items-center justify-between w-full"><span class="font-headline-sm text-xs font-semibold text-white">02:00 – 03:00 PM</span></div><div class="flex items-center justify-between w-full mt-1"><span class="font-headline-sm text-sm font-bold text-primary">₹1,300</span><span class="slot-badge text-[10px] text-on-surface-variant font-medium">Available</span></div></button><div class="locked-card p-3 rounded-xl bg-surface-container-lowest border border-white/5 text-left flex flex-col justify-between h-[72px] opacity-35 cursor-not-allowed select-none" onclick="triggerLocked(this)"><div class="flex items-center justify-between w-full"><span class="font-headline-sm text-xs font-medium text-on-surface-variant line-through">03:00 – 04:00 PM</span><span class="material-symbols-outlined text-[14px] text-on-surface-variant">lock</span></div><div class="flex items-center justify-between w-full mt-1"><span class="font-headline-sm text-xs text-on-surface-variant">₹1,300</span><span class="text-[10px] uppercase font-bold text-on-surface-variant">Booked</span></div></div><button class="slot-card group p-3 rounded-xl bg-surface-container-low border border-white/10 hover:border-white/25 text-left transition-all active:scale-[0.98] flex flex-col justify-between h-[72px]" data-time="04:00 – 05:00 PM" onclick="selectSlot(this, '04:00 – 05:00 PM', 1400)" type="button"><div class="flex items-center justify-between w-full"><span class="font-headline-sm text-xs font-semibold text-white">04:00 – 05:00 PM</span></div><div class="flex items-center justify-between w-full mt-1"><span class="font-headline-sm text-sm font-bold text-primary">₹1,400</span><span class="slot-badge text-[10px] text-on-surface-variant font-medium">Available</span></div></button></div></div><div><div class="flex items-center gap-2 mb-2"><span class="material-symbols-outlined text-[15px] text-primary">dark_mode</span><h3 class="font-headline-sm text-xs font-semibold text-white uppercase tracking-wider">Floodlit Evening (17:00 – 23:00)</h3><div class="flex-1 h-[1px] bg-white/10"></div><span class="text-[10px] font-bold text-primary uppercase tracking-wide">Prime</span></div><div class="grid grid-cols-2 gap-2"><button class="slot-card group p-3 rounded-xl bg-surface-container-low border border-white/10 hover:border-white/25 text-left transition-all active:scale-[0.98] flex flex-col justify-between h-[72px]" data-time="06:00 – 07:00 PM" onclick="selectSlot(this, '06:00 – 07:00 PM', 1500)" type="button"><div class="flex items-center justify-between w-full"><span class="font-headline-sm text-xs font-semibold text-white">06:00 – 07:00 PM</span></div><div class="flex items-center justify-between w-full mt-1"><span class="font-headline-sm text-sm font-bold text-primary">₹1,500</span><span class="slot-badge text-[10px] text-on-surface-variant font-medium">Available</span></div></button><button class="slot-card active group p-3 rounded-xl bg-surface-container-high border-2 border-primary text-left transition-all active:scale-[0.98] flex flex-col justify-between h-[72px] shadow-sm relative" data-time="07:00 – 08:00 PM" id="default-selected-slot" onclick="selectSlot(this, '07:00 – 08:00 PM', 1400)" type="button"><div class="flex items-center justify-between w-full"><span class="font-headline-sm text-xs font-bold text-primary">07:00 – 08:00 PM</span><span class="w-4 h-4 rounded-full bg-primary flex items-center justify-center text-on-primary check-pop"><span class="material-symbols-outlined text-[12px] font-bold">check</span></span></div><div class="flex items-center justify-between w-full mt-1"><span class="font-headline-sm text-sm font-black text-primary">₹1,400</span><span class="slot-badge text-[10px] font-semibold text-primary/90 tracking-wide">Selected</span></div></button><button class="slot-card group p-3 rounded-xl bg-surface-container-low border border-white/10 hover:border-white/25 text-left transition-all active:scale-[0.98] flex flex-col justify-between h-[72px]" data-time="08:00 – 09:00 PM" onclick="selectSlot(this, '08:00 – 09:00 PM', 1500)" type="button"><div class="flex items-center justify-between w-full"><span class="font-headline-sm text-xs font-semibold text-white">08:00 – 09:00 PM</span></div><div class="flex items-center justify-between w-full mt-1"><span class="font-headline-sm text-sm font-bold text-primary">₹1,500</span><span class="slot-badge text-[10px] text-on-surface-variant font-medium">Available</span></div></button><button class="slot-card group p-3 rounded-xl bg-surface-container-low border border-white/10 hover:border-white/25 text-left transition-all active:scale-[0.98] flex flex-col justify-between h-[72px]" data-time="09:00 – 10:00 PM" onclick="selectSlot(this, '09:00 – 10:00 PM', 1400)" type="button"><div class="flex items-center justify-between w-full"><span class="font-headline-sm text-xs font-semibold text-white">09:00 – 10:00 PM</span></div><div class="flex items-center justify-between w-full mt-1"><span class="font-headline-sm text-sm font-bold text-primary">₹1,400</span><span class="slot-badge text-[10px] text-on-surface-variant font-medium">Available</span></div></button><button class="slot-card col-span-2 group p-3 rounded-xl bg-surface-container-low border border-white/10 hover:border-white/25 text-left transition-all active:scale-[0.99] flex items-center justify-between" data-time="10:00 – 11:00 PM" onclick="selectSlot(this, '10:00 – 11:00 PM', 1300)" type="button"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">nightlight</span><span class="font-headline-sm text-xs font-semibold text-white">10:00 – 11:00 PM</span><span class="text-[9px] px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-medium uppercase">Late Night</span></div><span class="font-headline-sm text-sm font-bold text-primary">₹1,300</span></button></div></div></div>
+<!-- Perks / Policy note -->
+</div>
+<!-- Smart Bottom Stack: Docked Checkout Bar + Fixed Mobile Navigation -->
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-[#121416] border-t border-white/10 shadow-[0_-8px_24px_rgba(0,0,0,0.6)]">
+<!-- Docked Checkout Bar -->
+<div class="border-b border-white/10 px-4 py-2.5 max-w-xl mx-auto w-full"><div class="flex items-center justify-between gap-3"><div class="flex flex-col min-w-0"><div class="flex items-baseline gap-1.5"><span class="font-headline-lg text-2xl font-black tracking-tight text-white leading-none" id="checkout-price">₹1,449</span><button class="text-[11px] text-on-surface-variant hover:text-white underline underline-offset-2 flex items-center gap-0.5" onclick="openBreakdownModal()" type="button"><span class="">Details</span><span class="material-symbols-outlined text-[12px]">info</span></button></div><p class="text-[11px] text-primary font-medium truncate mt-1" id="checkout-summary">Thu, 19 Oct • 07:00 PM • Pitch A</p></div><button class="shrink-0 px-5 py-2.5 rounded-xl bg-primary hover:bg-[#3ec470] active:scale-95 text-on-primary font-headline-sm text-xs font-bold tracking-wide flex items-center gap-1.5 shadow-sm transition-all" id="proceed-btn" onclick="proceedToCheckout()" type="button"><span id="proceed-btn-text" class="">Proceed to Payment</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></button></div><div class="flex items-center justify-center gap-1.5 pt-1.5 mt-1.5 border-t border-white/5"><span class="material-symbols-outlined text-[13px] text-primary">verified_user</span><span class="text-[11px] text-on-surface-variant font-medium">Free cancellation up to 4 hrs before kick-off</span></div></div>
+<!-- Fixed Bottom Navigation Bar -->
+<nav aria-label="Bottom Navigation" class="max-w-xl mx-auto w-full px-2 pt-1 pb-safe"><div class="grid grid-cols-4 h-12 items-center"><button class="nav-tab flex flex-col items-center justify-center py-1 text-on-surface-variant hover:text-white active:scale-95 transition-colors" data-target="home" onclick="switchNav(this, 'Home')"><span class="material-symbols-outlined text-[20px]">home</span><span class="text-[10px] font-medium mt-0.5">Home</span></button><button class="nav-tab active flex flex-col items-center justify-center py-1 text-primary active:scale-95 transition-colors" data-target="turf" onclick="switchNav(this, 'Book Turf')"><span class="material-symbols-outlined text-[20px] font-bold">sports_soccer</span><span class="text-[10px] font-bold mt-0.5">Book Turf</span></button><button class="nav-tab flex flex-col items-center justify-center py-1 text-on-surface-variant hover:text-white active:scale-95 transition-colors" data-target="bookings" onclick="switchNav(this, 'My Bookings')"><span class="material-symbols-outlined text-[20px]">confirmation_number</span><span class="text-[10px] font-medium mt-0.5">Bookings</span></button><button class="nav-tab flex flex-col items-center justify-center py-1 text-on-surface-variant hover:text-white active:scale-95 transition-colors" data-target="profile" onclick="switchNav(this, 'Profile')"><span class="material-symbols-outlined text-[20px]">person</span><span class="text-[10px] font-medium mt-0.5">Profile</span></button></div></nav></div>
+<!-- Transparent Price Breakdown Modal / Drawer -->
+<div class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-200" id="price-modal" onclick="closeBreakdownModal(event)"><div class="w-full max-w-sm bg-surface-container-high border border-white/10 rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl" onclick="event.stopPropagation()"><div class="flex items-center justify-between pb-3 border-b border-white/10"><h3 class="font-headline-sm text-sm font-bold text-white">Rate Breakdown</h3><button class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:text-white hover:bg-white/10" onclick="closeBreakdownModal()"><span class="material-symbols-outlined text-[18px]">close</span></button></div><div class="py-4 space-y-2.5 text-xs"><div class="flex justify-between items-center text-on-surface-variant"><span class="">Base Slot Rate (60 mins)</span><span class="font-headline-sm font-semibold text-white" id="modal-slot-val">₹1,400</span></div><div class="flex justify-between items-center text-on-surface-variant"><span class="">Floodlights (Evening Session)</span><span class="font-headline-sm font-semibold text-white">₹30</span></div><div class="flex justify-between items-center text-on-surface-variant"><span class="">Convenience Fee &amp; GST (18%)</span><span class="font-headline-sm font-semibold text-white">₹19</span></div><div class="pt-3 border-t border-white/10 flex justify-between items-center"><span class="font-bold text-white text-sm">Total Payable</span><span class="font-headline-sm font-bold text-base text-primary" id="modal-total-val">₹1,449</span></div></div><div class="bg-surface-container-lowest p-3 rounded-lg text-[11px] text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[15px] text-primary">lock_clock</span><span class="">Slot held for 10 minutes once you proceed.</span></div><button class="w-full mt-4 py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-headline-sm text-xs font-bold transition-all" onclick="closeBreakdownModal()">Close Breakdown</button></div></div>
+<!-- Interactive Logic -->
+<script>
+    let state = {
+      sport: 'Box Cricket',
+      pitch: 'Pitch A',
+      pitchSubtitle: 'Main Cage',
+      date: 'Thu, 19 Oct',
+      slot: '07:00 – 08:00 PM',
+      price: 1400,
+      fee: 49
+    };
+
+    function updateSummaryUI() {
+      const summaryEl = document.getElementById('checkout-summary');
+      const priceEl = document.getElementById('checkout-price');
+      const modalSlotVal = document.getElementById('modal-slot-val');
+      const modalRateLabel = document.getElementById('modal-slot-rate-label');
+      const modalTotalVal = document.getElementById('modal-total-val');
+
+      const total = state.price + state.fee;
+
+      if (summaryEl) {
+        summaryEl.textContent = `${state.date} • ${state.slot.split(' – ')[0]} • ${state.pitch}`;
+      }
+      if (priceEl) {
+        priceEl.textContent = `₹${total.toLocaleString()}`;
+      }
+      if (modalSlotVal && modalTotalVal && modalRateLabel) {
+        modalSlotVal.textContent = `₹${state.price.toLocaleString()}`;
+        modalRateLabel.textContent = `₹${state.price.toLocaleString()}`;
+        modalTotalVal.textContent = `₹${total.toLocaleString()}`;
+      }
+    }
+
+    function toggleSport(sportType) {
+      const cricketBtn = document.getElementById('sport-cricket');
+      const footballBtn = document.getElementById('sport-football');
+      const specLabel = document.getElementById('pitch-spec-label');
+      const pitchBtnB = document.getElementById('pitch-btn-b');
+
+      if (sportType === 'cricket') {
+        state.sport = 'Box Cricket';
+        cricketBtn.className = 'sport-btn group relative p-3 rounded-xl text-left transition-all bg-surface-container-high border-2 border-primary text-white';
+        footballBtn.className = 'sport-btn group relative p-3 rounded-xl text-left transition-all bg-surface-container-low border border-white/10 text-on-surface-variant hover:border-white/20 hover:text-white';
+        cricketBtn.querySelector('.selected-badge').classList.remove('hidden');
+        cricketBtn.querySelector('.selected-badge').classList.add('flex');
+        footballBtn.querySelector('.selected-badge').classList.add('hidden');
+        footballBtn.querySelector('.selected-badge').classList.remove('flex');
+        if (specLabel) specLabel.textContent = 'North Cage • Matting Installed';
+      } else {
+        state.sport = '5v5 Football';
+        footballBtn.className = 'sport-btn group relative p-3 rounded-xl text-left transition-all bg-surface-container-high border-2 border-primary text-white';
+        cricketBtn.className = 'sport-btn group relative p-3 rounded-xl text-left transition-all bg-surface-container-low border border-white/10 text-on-surface-variant hover:border-white/20 hover:text-white';
+        footballBtn.querySelector('.selected-badge').classList.remove('hidden');
+        footballBtn.querySelector('.selected-badge').classList.add('flex');
+        cricketBtn.querySelector('.selected-badge').classList.add('hidden');
+        cricketBtn.querySelector('.selected-badge').classList.remove('flex');
+        if (specLabel) specLabel.textContent = 'FIFA 50mm Monofilament Turf';
+      }
+      updateSummaryUI();
+    }
+
+    function selectPitch(name, subtitle, btn) {
+      document.querySelectorAll('.pitch-segment').forEach(b => {
+        b.className = 'pitch-segment relative z-10 py-2.5 px-3 rounded-lg text-center text-xs font-headline-sm transition-all text-on-surface-variant hover:text-white font-medium bg-transparent active:scale-98';
+      });
+      btn.className = 'pitch-segment relative z-10 py-2.5 px-3 rounded-lg text-center text-xs font-headline-sm transition-all text-on-primary font-bold bg-primary shadow-sm active:scale-98';
+      state.pitch = name;
+      state.pitchSubtitle = subtitle;
+      updateSummaryUI();
+    }
+
+    function selectDate(btn, dateStr) {
+      document.querySelectorAll('.date-chip').forEach(c => {
+        c.className = 'date-chip flex-shrink-0 w-14 py-2 flex flex-col items-center rounded-xl bg-surface-container-low border border-white/10 hover:border-white/20 text-on-surface transition-all active:scale-95';
+        const label = c.querySelector('span:last-child');
+        const cDate = c.getAttribute('data-date');
+        if (label) {
+          if (cDate === 'Wed, 18 Oct') {
+            label.textContent = 'Today';
+            label.className = 'text-[9px] font-semibold text-primary mt-0.5';
+          } else if (cDate === 'Sat, 21 Oct' || cDate === 'Sun, 22 Oct') {
+            label.textContent = 'Prime';
+            label.className = 'text-[9px] text-primary font-medium mt-0.5';
+          } else {
+            label.textContent = 'Open';
+            label.className = 'text-[9px] text-on-surface-variant mt-0.5';
+          }
+        }
+      });
+
+      btn.className = 'date-chip active flex-shrink-0 w-14 py-2 flex flex-col items-center rounded-xl bg-primary text-on-primary border-2 border-primary shadow-sm transition-all active:scale-95';
+      const activeLabel = btn.querySelector('span:last-child');
+      if (activeLabel) {
+        activeLabel.textContent = 'Active';
+        activeLabel.className = 'text-[9px] font-bold text-on-primary mt-0.5';
+      }
+      const dayLabel = btn.querySelector('span:first-child');
+      if (dayLabel) {
+        dayLabel.className = 'font-label-caps text-[10px] uppercase font-bold text-on-primary';
+      }
+
+      state.date = dateStr;
+      updateSummaryUI();
+    }
+
+    function applyQuickDate(dateStr, btn) {
+      document.querySelectorAll('.quick-pill').forEach(p => {
+        p.className = 'quick-pill px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors bg-surface-container-low text-on-surface-variant hover:text-white border border-white/5 active:scale-95';
+      });
+      btn.className = 'quick-pill active px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors bg-surface-container-highest text-white border border-white/10 shadow-sm active:scale-95';
+
+      const targetChip = document.querySelector(`.date-chip[data-date="${dateStr}"]`);
+      if (targetChip) {
+        selectDate(targetChip, dateStr);
+        targetChip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }
+
+    function selectSlot(btn, slotTime, price) {
+      document.querySelectorAll('.slot-card').forEach(s => {
+        s.classList.remove('active', 'border-2', 'border-primary', 'bg-surface-container-high');
+        s.classList.add('border-white/10', 'bg-surface-container-low');
+        const timeSpan = s.querySelector('span:first-child');
+        if (timeSpan) {
+          timeSpan.classList.remove('text-primary', 'font-bold');
+          timeSpan.classList.add('text-white', 'font-semibold');
+        }
+        const badge = s.querySelector('.slot-badge');
+        if (badge) {
+          badge.textContent = 'Available';
+          badge.className = 'slot-badge text-[10px] text-on-surface-variant font-medium';
+        }
+        const checkIcon = s.querySelector('.check-pop');
+        if (checkIcon) checkIcon.remove();
+      });
+
+      btn.classList.add('active', 'border-2', 'border-primary', 'bg-surface-container-high');
+      btn.classList.remove('border-white/10', 'bg-surface-container-low');
+
+      const topRow = btn.querySelector('div:first-child');
+      if (topRow) {
+        const timeSpan = topRow.querySelector('span');
+        if (timeSpan) {
+          timeSpan.className = 'font-headline-sm text-xs font-bold text-primary';
+        }
+        const checkMark = document.createElement('span');
+        checkMark.className = 'w-4 h-4 rounded-full bg-primary flex items-center justify-center text-on-primary check-pop';
+        checkMark.innerHTML = '<span class="material-symbols-outlined text-[12px] font-bold">check</span>';
+        topRow.appendChild(checkMark);
+      }
+
+      const badge = btn.querySelector('.slot-badge');
+      if (badge) {
+        badge.textContent = 'Selected';
+        badge.className = 'slot-badge text-[10px] font-bold text-primary uppercase';
+      }
+
+      state.slot = slotTime;
+      state.price = price;
+      updateSummaryUI();
+    }
+
+    function triggerLocked(el) {
+      el.classList.remove('shake-anim');
+      void el.offsetWidth;
+      el.classList.add('shake-anim');
+      setTimeout(() => el.classList.remove('shake-anim'), 350);
+    }
+
+    function openBreakdownModal() {
+      const modal = document.getElementById('price-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeBreakdownModal(e) {
+      const modal = document.getElementById('price-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function switchNav(btn, navTitle) {
+      document.querySelectorAll('.nav-tab').forEach(t => {
+        t.className = 'nav-tab flex flex-col items-center justify-center py-1 text-on-surface-variant hover:text-white active:scale-95 transition-colors';
+        const label = t.querySelector('span:last-child');
+        if (label) label.classList.remove('font-bold');
+      });
+      btn.className = 'nav-tab active flex flex-col items-center justify-center py-1 text-primary active:scale-95 transition-colors';
+      const activeLabel = btn.querySelector('span:last-child');
+      if (activeLabel) activeLabel.classList.add('font-bold');
+    }
+
+    function proceedToCheckout() {
+      const btn = document.getElementById('proceed-btn');
+      const text = document.getElementById('proceed-btn-text');
+      if (!btn || !text) return;
+      btn.disabled = true;
+      text.textContent = 'Securing Slot...';
+      btn.classList.add('opacity-80');
+      setTimeout(() => {
+        text.textContent = 'Slot Reserved';
+        btn.classList.remove('bg-primary');
+        btn.classList.add('bg-emerald-600');
+        setTimeout(() => {
+          text.textContent = 'Proceed to Payment';
+          btn.disabled = false;
+          btn.classList.remove('bg-emerald-600', 'opacity-80');
+          btn.classList.add('bg-primary');
+        }, 1600);
+      }, 700);
+    }
+  </script>
+</div></main>
+
+
+</body></html>

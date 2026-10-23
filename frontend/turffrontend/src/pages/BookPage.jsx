@@ -66,7 +66,9 @@ export default function BookPage() {
     };
 
     function onProceed() {
-        if (jsonData.service == null) {
+        setIsLoggedIn(isLoggedIn());
+
+        if (jsonData.service ===null) {
             //sroll to the component
             serviceRef.current?.scrollIntoView({
                 behavior: "smooth",
@@ -76,7 +78,7 @@ export default function BookPage() {
             
             return;
         }
-        if (jsonData.time_slots.length == 0) {
+        if (!jsonData.time_slots?.length) {
             
             timeSlotRef.current?.scrollIntoView({
                 behavior: "smooth",
@@ -87,9 +89,11 @@ export default function BookPage() {
         }
 
         if(!isLoggedInn){
-            setLoginModalOpenState(!loginModalOpenState);
+            setLoginModalOpenState(!loginModalOpenState)
             return;
         }
+
+        console.log("proceeeding...")
     }
 
 
@@ -118,8 +122,20 @@ export default function BookPage() {
 
             <PriceBreakdownModal isOpen={showBreakdown} onClose={() => setShowBreakdown(false)} slotPrice={[price]} />
 
-
-            <LoginModal isOpen={loginModalOpenState} onClose={() => { setLoginModalOpenState(!loginModalOpenState) }} />
+            <LoginModal
+        isOpen={loginModalOpenState}
+        onClose={() => setLoginModalOpenState(false)}
+        onSendOtp={async (phone) => {
+          // Replace with your API request.
+          // Example: await api.post("/auth/send-otp", { phone });
+          console.log("Send OTP to:", phone);
+        }}
+        onVerifyOtp={async (phone, otp) => {
+          // Replace with your API request.
+          // Example: await api.post("/auth/verify-otp", { phone, otp });
+          console.log("Verify:", phone, otp);
+        }}
+      />
         </div>
 
 

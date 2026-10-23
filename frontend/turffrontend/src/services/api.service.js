@@ -37,8 +37,8 @@ authAPI.interceptors.request.use((config) => {
 
 
 
-export const registerUser = (phone_number) => {
-  return authAPI.post("/auth/send-otp/", { phone_number });
+export const sendOtp = (phone) => {
+  return authAPI.post("/auth/send-otp/", { phone });
 };
 
 

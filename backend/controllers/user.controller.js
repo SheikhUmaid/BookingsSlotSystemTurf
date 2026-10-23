@@ -36,12 +36,15 @@ const verifyOTP = async (req, res) => {
     try {
         const { token, otp } = req.body;
         if (!token || !otp) {
+            console.log("Token or OTP missing:", { token, otp });
             return res.status(400).json({ message: "Token and OTP are required" });
+            
         }
         
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         if (decoded.otp !== otp) {
+            console.log("Invalid OTP:", { expected: decoded.otp, received: otp });
             return res.status(400).json({ message: "Invalid OTP" });
         }
 
