@@ -11,21 +11,42 @@ import { useRef, useState } from "react";
 import LoginModal from "../components/shared/LoginModal";
 import toast from "react-hot-toast"
 import { isLoggedIn } from "../services/auth.service";
-import { verifyCoupon } from "../services/api.service";
+import { createBooking, createOrder, verifyCoupon } from "../services/api.service";
+
+const RAZORPAY_CHECKOUT_URL = "https://checkout.razorpay.com/v1/checkout.js";
+
+function loadRazorpayCheckout() {
+    if (window.Razorpay) {
+        return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+        const existingScript = document.querySelector(`script[src="${RAZORPAY_CHECKOUT_URL}"]`);
+        const script = existingScript || document.createElement("script");
+
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Unable to load Razorpay Checkout."));
+
+        if (!existingScript) {
+            script.src = RAZORPAY_CHECKOUT_URL;
+            script.async = true;
+            document.body.appendChild(script);
+        }
+    });
+}
 
 
 export default function BookPage() {
     const [showBreakdown, setShowBreakdown] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [selectedSport, setSelectedSport] = useState(null);
-    const { sports, loading, error } = useSports();
-    const [selectedTimeSlots, setSelectedTimeSlots] = useState([]);
+    const { sports } = useSports();
+    const [, setSelectedTimeSlots] = useState([]);
     const [basePrice, setBasePrice] = useState(0);
     const [price, setPrice] = useState(0)
     const [loginModalOpenState, setLoginModalOpenState] = useState(false)
     const serviceRef = useRef(null);
     const timeSlotRef = useRef(null);
-    const [isLoggedInn, setIsLoggedIn] = useState(isLoggedIn())
     const [appliedCoupon, setAppliedCoupon] = useState(null);
     const [couponLoading, setCouponLoading] = useState(false);
     // get today's iso date
@@ -76,9 +97,7 @@ export default function BookPage() {
         }));
     };
 
-    function onProceed() {
-        setIsLoggedIn(isLoggedIn());
-        console.log(jsonData)
+    async function onProceed() {
         if (jsonData.service === null) {
             //sroll to the component
             serviceRef.current?.scrollIntoView({
@@ -99,12 +118,55 @@ export default function BookPage() {
             return;
         }
 
-        if (!isLoggedInn) {
-            setLoginModalOpenState(!loginModalOpenState)
+        if (!isLoggedIn()) {
+            setLoginModalOpenState(true);
             return;
         }
 
-        // setIsProcessing(true);
+        try {
+            setIsProcessing(true);
+            await loadRazorpayCheckout();
+
+            const bookingResponse = await createBooking(jsonData);
+            const bookingId = bookingResponse.data.booking?._id;
+
+            if (!bookingId) {
+                throw new Error("Booking was created without an ID.");
+            }
+
+            const orderResponse = await createOrder({
+                bookingId,
+                paymentType: "full",
+            });
+            const order = orderResponse.data;
+            const checkout = new window.Razorpay({
+                key: order.key_id,
+                amount: order.amount,
+                currency: order.currency,
+                order_id: order.order_id,
+                name: "Turf Booking",
+                description: "Booking payment",
+                handler: () => {
+                    setIsProcessing(false);
+                    toast.success("Payment submitted. Your booking will update once payment is confirmed.");
+                },
+                modal: {
+                    ondismiss: () => setIsProcessing(false),
+                },
+            });
+
+            checkout.on("payment.failed", (event) => {
+                setIsProcessing(false);
+                toast.error(event.error?.description || "Payment failed. Please try again.");
+            });
+
+            checkout.open();
+        } catch (error) {
+            setIsProcessing(false);
+            toast.error(
+                error.response?.data?.message || error.message || "Unable to start payment. Please try again."
+            );
+        }
     }
 
 

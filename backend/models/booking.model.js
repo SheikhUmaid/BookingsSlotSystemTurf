@@ -46,6 +46,11 @@ const bookingSchema = mongoose.Schema({
     payment_order_id: {
         type: String
     },
+
+    payment_order_amount: {
+        type: Number,
+        default:null
+    },
     payment_id: {
         type: String
     },

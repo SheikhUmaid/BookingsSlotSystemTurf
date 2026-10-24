@@ -3,7 +3,7 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 import express from "express";
 const router = express.Router();
 
-router.post("/create", authMiddleware, createBooking);
+router.post("/", authMiddleware, createBooking);
 router.get("/my-bookings/:userId", authMiddleware, getMyBookings);
 
 export default router;

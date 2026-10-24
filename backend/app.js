@@ -20,9 +20,12 @@ app.use(
             "http://127.0.0.1:5173",
             "http://localhost:5501",
             "http://127.0.0.1:5501",
-            "https://3288-2409-40f2-4b-1333-f92f-d3fa-d0a4-bce8.ngrok-free.app"
+            "https://9jv5v14k-5000.inc1.devtunnels.ms/"
+            // Add your FRONTEND ngrok URL here if applicable
         ],
         credentials: true,
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
     })
 );
 

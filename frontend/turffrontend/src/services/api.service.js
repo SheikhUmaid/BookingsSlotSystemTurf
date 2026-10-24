@@ -3,21 +3,18 @@ import axios from 'axios';
 
 
 const authAPI = axios.create({
-    baseURL: "http://127.0.0.1:5000/api", withCredentials: true,
+    baseURL: "https://9jv5v14k-5000.inc1.devtunnels.ms/api", withCredentials: true,
 });
 
 
 const handleResponse = (response) => response;
 const handleError = (error) => {
-    if (error.response?.status === 401) {
-        localStorage.removeItem('user');
-        window.location.href = '/auth';
-    }
+    // if (error.response?.status === 401) {
+    //     localStorage.removeItem('user');
+    //     window.location.href = '/auth';
+    // }
     return Promise.reject(error);
 };
-
-
-
 
 
 authAPI.interceptors.response.use(handleResponse, handleError);
@@ -39,7 +36,6 @@ authAPI.interceptors.request.use((config) => {
 export const sendOtp = (phone) => {
   return authAPI.post("/auth/send-otp/", { phone });
 };
-
 
 export const verifyOTP = (token, otp) => {
   return authAPI.post("/auth/verify-otp/", { token, otp });
@@ -65,3 +61,18 @@ export const fetchAvailableTimeSlots = (date, config = {}) => {
 export const fetchMyBookings = () => {
   return authAPI.get("/my-bookings/");
 };
+
+export const createBooking = (data) =>  {
+  return authAPI.post(`/bookings/`, data)
+
+}
+
+export const createOrder = (data) =>  {
+  return authAPI.post(`payments/create-order/`, data)
+  
+}
+
+export const paymentWebhook = (data)=>{
+  return authAPI.post(`payments/razorpay-webhook/`, data)
+
+}

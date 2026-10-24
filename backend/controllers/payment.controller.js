@@ -77,8 +77,8 @@ export const createPaymentOrder = async (req, res) => {
       paymentType === "full"
         ? totalPaise
         : Math.round(
-            totalPaise * PARTIAL_PAYMENT_PERCENT / 100
-          );
+          totalPaise * PARTIAL_PAYMENT_PERCENT / 100
+        );
 
     // Razorpay's minimum order amount for INR is ₹1
     if (
@@ -135,13 +135,16 @@ export const createPaymentOrder = async (req, res) => {
 export const razorpayWebhook = async (req, res) => {
   try {
     // 1. Read the raw request body.
+    console.log(1);
     // The route must use express.raw(), not express.json().
     const rawBody = req.body;
 
     if (!Buffer.isBuffer(rawBody)) {
+      console.log("1")
       return res.status(400).send("Raw body required.");
     }
 
+    console.log(2);
     // 2. Verify Razorpay's webhook signature
     const receivedSignature =
       req.headers["x-razorpay-signature"];
@@ -152,6 +155,7 @@ export const razorpayWebhook = async (req, res) => {
     ) {
       return res.status(400).send("Invalid signature.");
     }
+    console.log(3);
 
     const expectedSignature = crypto
       .createHmac(
@@ -171,6 +175,7 @@ export const razorpayWebhook = async (req, res) => {
       "hex"
     );
 
+    console.log(4);
     if (
       receivedBuffer.length !== expectedBuffer.length ||
       !crypto.timingSafeEqual(
@@ -178,9 +183,12 @@ export const razorpayWebhook = async (req, res) => {
         expectedBuffer
       )
     ) {
+      console.log("2")
+
       return res.status(400).send("Signature verification failed.");
     }
 
+    console.log(5);
     // 3. Parse the body only after signature verification
     const event = JSON.parse(rawBody.toString("utf8"));
 
@@ -190,6 +198,7 @@ export const razorpayWebhook = async (req, res) => {
         received: true
       });
     }
+    console.log(6);
 
     const payment = event.payload?.payment?.entity;
 
@@ -199,8 +208,11 @@ export const razorpayWebhook = async (req, res) => {
       !Number.isSafeInteger(payment.amount) ||
       payment.status !== "captured"
     ) {
+      console.log("3")
+
       return res.status(400).send("Invalid payment payload.");
     }
+    console.log(7);
 
     // 5. Find the booking associated with this Razorpay order
     const booking = await Booking.findOne({
@@ -222,7 +234,31 @@ export const razorpayWebhook = async (req, res) => {
         reconciled: false
       });
     }
+    console.log(8);
 
+
+
+
+    console.log("Payment comparison:", {
+      paymentCurrency: payment.currency,
+      paymentAmountPaise: payment.amount,
+      bookingOrderAmount: booking.payment_order_amount,
+      bookingOrderAmountType: typeof booking.payment_order_amount,
+      paymentAmountRupees: payment.amount / 100,
+      bookingTotalPayable: booking.total_payable,
+    });
+
+    if (
+      payment.currency !== "INR" ||
+      payment.amount !== booking.payment_order_amount
+    ) {
+      console.error("Payment amount/currency mismatch");
+
+      return res.status(200).json({
+        received: true,
+        reconciled: false,
+      });
+    }
     // 6. Check currency and exact amount
     if (
       payment.currency !== "INR" ||
@@ -235,6 +271,8 @@ export const razorpayWebhook = async (req, res) => {
       });
 
       // Flag for manual reconciliation; do not mark as paid.
+      console.log(9);
+
       return res.status(200).json({
         received: true,
         reconciled: false
@@ -269,6 +307,8 @@ export const razorpayWebhook = async (req, res) => {
 
     booking.payment_id = payment.id;
     booking.amount_paid = amountPaidRupees;
+
+    console.log(10);
 
     // 9. Update booking status
     if (booking.amount_paid >= booking.total_payable) {

@@ -3,9 +3,6 @@ import jwt from "jsonwebtoken";
 
 
 
-
-
-
 const sendOTP = async (req, res) => {
     try {
         const { phone } = req.body;
@@ -60,7 +57,7 @@ const verifyOTP = async (req, res) => {
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: 'none',
             maxAge: 180 * 24 * 60 * 60 * 1000, // 180 days
         });
         
