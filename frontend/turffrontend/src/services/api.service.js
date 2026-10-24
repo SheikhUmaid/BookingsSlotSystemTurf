@@ -13,7 +13,6 @@ const handleError = (error) => {
         localStorage.removeItem('user');
         window.location.href = '/auth';
     }
-    console.error('API Error:', error);
     return Promise.reject(error);
 };
 
@@ -52,6 +51,10 @@ export const fetchSports = () => {
 
 export const fetchAllTimeSlots = () => {
   return authAPI.get('/time-slots/');
+};
+
+export const verifyCoupon = (coupon) => {
+  return authAPI.get(`/coupons/${coupon}`);
 };
 
 

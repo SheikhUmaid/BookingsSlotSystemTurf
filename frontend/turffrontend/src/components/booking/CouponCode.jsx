@@ -26,9 +26,9 @@ export default function CouponCode({
             await onApply?.(couponCode);
         } catch (err) {
             setError(
-                err.response?.data?.detail ||
-                err.response?.data?.message ||
-                "Unable to apply this coupon."
+                err.request.response?.data?.detail ||
+                err.request.response?.data?.message ||
+                "Invalid Coupon!"
             );
         }
     }
@@ -41,9 +41,9 @@ export default function CouponCode({
 
     return (
         <div className="p-4">
-            <section className="rounded-2xl border border-white/[0.08] bg-[#1a1c1e] p-4 sm:p-5">
+            <section className="rounded-2xl border border-white/8 bg-surface-container-low p-4 sm:p-5">
                 <div className="mb-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-400/15 bg-emerald-400/[0.07] text-emerald-400">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-400/15 bg-primary/[0.07] text-emerald-400">
                         <svg
                             viewBox="0 0 24 24"
                             fill="none"
@@ -61,15 +61,15 @@ export default function CouponCode({
                         <h3 className="text-sm font-bold text-white">
                             Have a coupon?
                         </h3>
-                        <p className="mt-1 text-xs text-[#a6b3ab]">
+                        <p className="mt-1 text-xs text-on-surface-variant">
                             Apply a code to save on your booking.
                         </p>
                     </div>
                 </div>
 
                 {appliedCoupon ? (
-                    <div className="flex items-center gap-3 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.06] p-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-400">
+                    <div className="flex items-center gap-3 rounded-xl border border-emerald-400/25 bg-primary/6 p-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-emerald-400">
                             <svg
                                 viewBox="0 0 24 24"
                                 fill="none"
@@ -86,7 +86,7 @@ export default function CouponCode({
                             <p className="truncate text-sm font-bold tracking-wide text-emerald-400">
                                 {appliedCoupon.code}
                             </p>
-                            <p className="mt-1 text-xs text-[#a6b3ab]">
+                            <p className="mt-1 text-xs text-on-surface-variant">
                                 Coupon applied successfully
                             </p>
                         </div>
@@ -95,7 +95,7 @@ export default function CouponCode({
                             type="button"
                             onClick={handleRemove}
                             disabled={loading}
-                            className="rounded-lg px-2 py-2 text-xs font-semibold text-[#a6b3ab] hover:bg-white/[0.05] hover:text-white disabled:opacity-50"
+                            className="rounded-lg px-2 py-2 text-xs font-semibold text-on-surface-variant hover:bg-white/5 hover:text-white disabled:opacity-50"
                         >
                             Remove
                         </button>
@@ -113,13 +113,13 @@ export default function CouponCode({
                                 placeholder="Enter coupon code"
                                 aria-label="Coupon code"
                                 aria-invalid={Boolean(error)}
-                                className="h-12 min-w-0 flex-1 rounded-xl border border-white/[0.1] bg-[#121416] px-3 text-sm font-semibold tracking-wider text-white outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-[#65736c] focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/10 sm:px-4"
+                                className="h-12 min-w-0 flex-1 rounded-xl border border-white/10 bg-surface px-3 text-sm font-semibold tracking-wider text-white outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-[#65736c] focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/10 sm:px-4"
                             />
 
                             <button
                                 type="submit"
                                 disabled={loading || !code.trim()}
-                                className="h-12 shrink-0 rounded-xl bg-emerald-400 px-5 text-sm font-bold text-[#052e16] transition hover:bg-emerald-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                                className="h-12 shrink-0 rounded-xl bg-primary px-5 text-sm font-bold text-on-primary transition hover:bg-emerald-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
                             >
                                 {loading ? "Applying..." : "Apply"}
                             </button>

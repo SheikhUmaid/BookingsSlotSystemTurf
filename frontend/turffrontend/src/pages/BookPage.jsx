@@ -11,6 +11,7 @@ import { useRef, useState } from "react";
 import LoginModal from "../components/shared/LoginModal";
 import toast from "react-hot-toast"
 import { isLoggedIn } from "../services/auth.service";
+import { verifyCoupon } from "../services/api.service";
 
 
 export default function BookPage() {
@@ -19,6 +20,7 @@ export default function BookPage() {
     const [selectedSport, setSelectedSport] = useState(null);
     const { sports, loading, error } = useSports();
     const [selectedTimeSlots, setSelectedTimeSlots] = useState([]);
+    const [basePrice, setBasePrice] = useState(0);
     const [price, setPrice] = useState(0)
     const [loginModalOpenState, setLoginModalOpenState] = useState(false)
     const serviceRef = useRef(null);
@@ -35,12 +37,13 @@ export default function BookPage() {
         date: isoDate,
         service: null,
         time_slots: [],
+        coupon_code: ""
     });
 
     //TODO: on first click it doesn't add service ID (sport ID)
     const handleSportChange = (sportId) => {
         setSelectedSport(sportId);
-
+        setAppliedCoupon(null);
         setJsonData((prev) => ({
             ...prev,
             service: sportId,
@@ -50,27 +53,32 @@ export default function BookPage() {
     const handleDateChange = (newDate) => {
         setDate(newDate);
         setSelectedTimeSlots([]);
+        setAppliedCoupon(null);
 
         setJsonData((prev) => ({
             ...prev,
             date: newDate,
             time_slots: [],
+            coupon_code: ""
         }));
     };
 
     const handleTimeSlotChange = ({ time_slots, price }) => {
         setSelectedTimeSlots(time_slots);
+        setBasePrice(price);
         setPrice(price);
+        setAppliedCoupon(null);
 
         setJsonData((prev) => ({
             ...prev,
             time_slots,
+            coupon_code: "",
         }));
     };
 
     function onProceed() {
         setIsLoggedIn(isLoggedIn());
-
+        console.log(jsonData)
         if (jsonData.service === null) {
             //sroll to the component
             serviceRef.current?.scrollIntoView({
@@ -96,11 +104,26 @@ export default function BookPage() {
             return;
         }
 
-        setIsProcessing(true);
+        // setIsProcessing(true);
     }
 
 
+    async function applyCouponCode(coupon) {
+        setCouponLoading(true);
+        try {
+            const res = await verifyCoupon(coupon);
 
+            if (!res.data.active) {
+                throw new Error(res.data.message || "This coupon is not active.");
+            }
+
+            setAppliedCoupon({ code: coupon });
+            setPrice(basePrice - (basePrice * res.data.discount_percentage / 100));
+            setJsonData((prev) => ({ ...prev, coupon_code: coupon }));
+        } finally {
+            setCouponLoading(false);
+        }
+    }
     return (
 
         <div className="min-h-screen bg-[#111315]">
@@ -125,29 +148,16 @@ export default function BookPage() {
             <CouponCode
                 appliedCoupon={appliedCoupon}
                 loading={couponLoading}
-                onApply={async (code) => {
-                    setCouponLoading(true);
-
-                    try {
-                        const res = await authAPI.post("/coupons/apply/", {
-                            code,
-                            time_slots: jsonData.time_slots,
-                        });
-
-                        setAppliedCoupon(res.data.coupon);
-                        // Update your booking total from the server response.
-                    } finally {
-                        setCouponLoading(false);
-                    }
-                }}
+                onApply={applyCouponCode}
                 onRemove={async () => {
                     setAppliedCoupon(null);
-                    // Recalculate the original booking total.
+                    setPrice(basePrice);
+                    setJsonData((prev) => ({ ...prev, coupon_code: "" }));
                 }}
             />
 
 
-            
+
 
 
             <div className="h-20"></div>
@@ -155,7 +165,7 @@ export default function BookPage() {
             <PriceBreakdownModal isOpen={showBreakdown} onClose={() => setShowBreakdown(false)} slotPrice={[price]} />
 
             <LoginModal isOpen={loginModalOpenState} onClose={() => setLoginModalOpenState(false)} />
-            
+
         </div>
 
 
