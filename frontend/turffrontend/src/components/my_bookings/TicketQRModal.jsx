@@ -1,6 +1,23 @@
-
+import QRCode from "qrcode"
+import { useEffect, useState } from "react";
 export default function TicketQRModal({ onClose, booking }) {
     if (!booking) return null;
+    let test = "328479823479"
+    const [qrCode, setQRCode] = useState(null);
+
+    const generateQR = async text => {
+        try {
+            const qr = await QRCode.toDataURL(text)
+            setQRCode(qr);
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    useEffect(()=>{
+        generateQR(test)
+
+    },[])
 
     return (
         <div
@@ -34,7 +51,7 @@ export default function TicketQRModal({ onClose, booking }) {
 
                 {/* QR Code placeholder */}
                 <div className="flex items-center justify-center rounded-xl bg-white p-3 shadow-inner">
-                    <svg
+                    {/* <svg
                         viewBox="0 0 100 100"
                         className="h-48 w-48 text-surface-dim"
                         fill="currentColor"
@@ -42,7 +59,8 @@ export default function TicketQRModal({ onClose, booking }) {
                         aria-label="QR code placeholder"
                     >
                         <path d="M5 5h30v30H5V5zm4 4v22h22V9H9zm4 4h14v14H13V13zm52-8h30v30H65V5zm4 4v22h22V9H69zm4 4h14v14H73V13zM5 65h30v30H5V65zm4 4v22h22V69H9zm4 4h14v14H13V73zm52-8h8v8h-8v-8zm14 0h14v8H79v-8zm-14 14h8v8h-8v-8zm14 0h8v8h-8v-8zm8 8h6v6h-6v-6zm-22 6h8v8h-8v-8zm14 0h14v8H79v-8zM42 5h8v8h-8V5zm8 8h8v8h-8v-8zm-8 8h8v8h-8v-8zm16 8h8v8h-8v-8zm-16 16h8v8h-8v-8zm8 8h8v8h-8v-8zm8-8h8v8h-8v-8zm-16 16h8v8h-8v-8zm8 8h8v8h-8v-8zm-16 8h8v8h-8v-8z" />
-                    </svg>
+                    </svg> */}
+                    <img src={qrCode} alt="" />
                 </div>
 
                 {/* Booking details */}

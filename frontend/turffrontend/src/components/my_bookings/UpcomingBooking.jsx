@@ -84,7 +84,7 @@ export default function UpcomingBooking() {
                             backgroundImage: `url("${booking.image}")`,
                         }}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-t from-surface-container via-surface-container/60 to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-surface-container via-surface-container/60 to-transparent" />
 
                         {/* Status and sport */}
                         <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
@@ -145,7 +145,7 @@ export default function UpcomingBooking() {
                                     <span className="block text-[10px] uppercase tracking-wider text-on-surface-variant">
                                         Match Date
                                     </span>
-                                    <span className="mt-1 block text-sm font-medium leading-snug text-on-surface break-words">
+                                    <span className="mt-1 block text-sm font-medium leading-snug text-on-surface wrap-break-word">
                                         {booking.date}
                                     </span>
                                 </div>
