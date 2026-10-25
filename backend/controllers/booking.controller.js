@@ -201,8 +201,15 @@ export const createBooking = async (req, res) => {
 
 export const getMyBookings = async (req, res) => {
     try {
-        const userId = req.user.id;
-        const myBookings = await Booking.find({ userId }).populate('timeSlotId');
+        const user = req.user.id;
+        console.log(user)
+        const myBookings = await Booking.find({ user ,
+             status: { $in: ["pending", "partial", "paid"] },
+        }).populate('time_slots service').select(`
+                -user -total_payable -expires_at -payment_order_amount -createdAt -updatedAt -__v -payment_order_id
+            `);
+
+        console.log(myBookings)
         res.status(200).json(myBookings);
     } catch (error) {
         res.status(500).json({ message: error.message });

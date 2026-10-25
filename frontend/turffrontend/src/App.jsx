@@ -1,6 +1,6 @@
-import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import BookPage from "./pages/BookPage";
+import BookingsPage from "./pages/BookingsPage.jsx";
 import BottomNavbar from "./components/shared/BottomNavBar.jsx";
 import {Toaster} from "react-hot-toast"
 
@@ -15,7 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<div>Home</div>} />
           <Route path="/book" element={<BookPage/>} />
-          <Route path="/bookings" element={<div>Bookings</div>} />
+          <Route path="/bookings" element={<BookingsPage/>} />
           <Route path="/profile" element={<div>Profile</div>} />
         </Routes>
       </main>

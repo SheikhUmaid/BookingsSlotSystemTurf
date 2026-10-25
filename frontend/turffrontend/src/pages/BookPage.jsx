@@ -149,6 +149,7 @@ export default function BookPage() {
                 handler: () => {
                     setIsProcessing(false);
                     toast.success("Payment submitted. Your booking will update once payment is confirmed.");
+                    window.location.href = "/bookings"
                 },
                 modal: {
                     ondismiss: () => setIsProcessing(false),
@@ -160,7 +161,10 @@ export default function BookPage() {
                 toast.error(event.error?.description || "Payment failed. Please try again.");
             });
 
-            checkout.open();
+           
+            checkout.open()
+            // window.location.href("/bookings")
+            
         } catch (error) {
             setIsProcessing(false);
             toast.error(

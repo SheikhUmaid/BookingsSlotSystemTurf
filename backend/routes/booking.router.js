@@ -4,6 +4,6 @@ import express from "express";
 const router = express.Router();
 
 router.post("/", authMiddleware, createBooking);
-router.get("/my-bookings/:userId", authMiddleware, getMyBookings);
+router.get("/bookings", authMiddleware, getMyBookings);
 
 export default router;
