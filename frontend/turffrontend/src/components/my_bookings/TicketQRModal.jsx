@@ -1,8 +1,9 @@
 import QRCode from "qrcode"
 import { useEffect, useState } from "react";
+import { dateFormatter } from "../../services/date.service";
 export default function TicketQRModal({ onClose, booking }) {
     if (!booking) return null;
-    let test = "328479823479"
+    
     const [qrCode, setQRCode] = useState(null);
 
     const generateQR = async text => {
@@ -15,8 +16,7 @@ export default function TicketQRModal({ onClose, booking }) {
     }
 
     useEffect(()=>{
-        generateQR(test)
-
+        generateQR(booking._id)
     },[])
 
     return (
@@ -69,19 +69,19 @@ export default function TicketQRModal({ onClose, booking }) {
                         id="ticket-modal-title"
                         className="text-xl font-medium text-on-surface"
                     >
-                        {booking.reference}
+                        {booking._id}
                     </h2>
 
                     <span className="text-xs font-semibold uppercase tracking-wide text-primary">
-                        {booking.pitch}
+                        {booking.service.description}
                     </span>
 
                     <span className="text-sm text-on-surface-variant">
-                        {booking.date}
+                        {dateFormatter(booking.date)}
                     </span>
 
                     <span className="text-sm text-on-surface">
-                        {booking.time}
+                        {booking.time_slots[0].start_time}
                     </span>
 
                     <p className="pt-2 text-xs leading-relaxed text-on-surface-variant">

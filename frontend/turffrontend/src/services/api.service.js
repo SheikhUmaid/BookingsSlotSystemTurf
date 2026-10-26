@@ -3,7 +3,7 @@ import axios from 'axios';
 
 
 const authAPI = axios.create({
-    baseURL: "https://9jv5v14k-5000.inc1.devtunnels.ms/api", withCredentials: true,
+    baseURL: "http://127.0.0.1:5000/api", withCredentials: true,
 });
 
 
@@ -64,6 +64,10 @@ export const fetchMyBookings = () => {
 
 export const createBooking = (data) =>  {
   return authAPI.post(`/bookings/`, data)
+
+}
+export const getBooking = (data) =>  {
+  return authAPI.get(`/bookings/`)
 
 }
 

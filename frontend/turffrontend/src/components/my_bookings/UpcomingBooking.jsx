@@ -1,23 +1,11 @@
 
 import { useState } from "react";
 import TicketQRModal from "./TicketQRModal";
+import { dateFormatter } from "../../services/date.service";
 
-export default function UpcomingBooking() {
+export default function UpcomingBooking({booking}) {
     const [showQR, setShowQR] = useState(false);
 
-    const booking = {
-        status: "Confirmed",
-        sport: "5v5 Football",
-        price: 1449,
-        pitch: "Pitch A (Main Cage)",
-        facility: "Pro FIFA Turf • Floodlit Apex",
-        reference: "#SY-8824",
-        date: "Thu, 19 Oct 2023",
-        time: "07:00 PM - 08:00 PM",
-        location: "Strikers Yard Downtown Arena Pitch",
-        image:
-            "https://lh3.googleusercontent.com/aida-public/AB6AXuCd7-AZ52XPVXBpoSexcVVphhCQhIPv4i32Qm3Xu7bgh9eT_q_jC_gBlZiK_ov5m3cnfjoGQey1wj0IEKFKGTyxbXxJiCFkQuQ_5B4kVWUPPAqht86K6xgzadjNGJyPj6FgLHoGmkHS1WqcF-VikQUBt-wb68OnIZSIFZCOL6laZ_evfxufqjkBp51m_TgROLb22aotILp43wOS609xAiuYTDeEG6quYyUtlVqCoVV8TQiflydaR90LBw",
-    };
 
     const shareBooking = async () => {
         const message = `${booking.sport} confirmed at ${booking.pitch}. ${booking.date}, ${booking.time}. Ref: ${booking.reference}`;
@@ -81,7 +69,7 @@ export default function UpcomingBooking() {
                     <div
                         className="relative h-36 w-full bg-cover bg-center"
                         style={{
-                            backgroundImage: `url("${booking.image}")`,
+                            backgroundImage: `url("${'https://lh3.googleusercontent.com/aida-public/AB6AXuCd7-AZ52XPVXBpoSexcVVphhCQhIPv4i32Qm3Xu7bgh9eT_q_jC_gBlZiK_ov5m3cnfjoGQey1wj0IEKFKGTyxbXxJiCFkQuQ_5B4kVWUPPAqht86K6xgzadjNGJyPj6FgLHoGmkHS1WqcF-VikQUBt-wb68OnIZSIFZCOL6laZ_evfxufqjkBp51m_TgROLb22aotILp43wOS609xAiuYTDeEG6quYyUtlVqCoVV8TQiflydaR90LBw'}")`,
                         }}
                     >
                         <div className="absolute inset-0 bg-linear-to-t from-surface-container via-surface-container/60 to-transparent" />
@@ -91,16 +79,16 @@ export default function UpcomingBooking() {
                             <div className="flex flex-wrap items-center gap-2 min-w-0">
                                 <span className="inline-flex items-center gap-1.5 rounded-md bg-surface-container-lowest/90 px-2.5 py-2 text-xs uppercase tracking-wide text-primary">
                                     <span className="h-2 w-2 rounded-full bg-primary" />
-                                    {booking.status}
+                                    {booking.status.toUpperCase()}
                                 </span>
 
                                 <span className="rounded-md bg-surface-container-lowest/90 px-2.5 py-2 text-xs uppercase tracking-wide text-on-surface">
-                                    {booking.sport}
+                                    {booking.service.name}
                                 </span>
                             </div>
 
                             <span className="shrink-0 rounded-md bg-surface-container-lowest/90 px-2.5 py-2 text-sm font-medium text-on-surface">
-                                ₹{booking.price.toLocaleString("en-IN")}
+                                ₹{booking.amount_paid.toLocaleString("en-IN")}
                             </span>
                         </div>
                     </div>
@@ -111,14 +99,14 @@ export default function UpcomingBooking() {
                         <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0 flex-1">
                                 <h2 className="text-lg font-medium leading-snug text-on-surface">
-                                    {booking.pitch}
+                                    {booking.service.description}
                                 </h2>
 
                                 <div className="mt-1 flex items-start gap-1.5 text-sm text-on-surface-variant">
                                     <span className="material-symbols-outlined text-base text-primary">
                                         stadium
                                     </span>
-                                    <span>{booking.facility}</span>
+                                    <span>{booking.service.description}</span>
                                 </div>
                             </div>
 
@@ -127,13 +115,13 @@ export default function UpcomingBooking() {
                                     Booking Ref
                                 </span>
                                 <span className="mt-1 block text-xs font-bold tracking-wider text-primary">
-                                    {booking.reference}
+                                    {booking._id}
                                 </span>
                             </div>
                         </div>
 
                         {/* Date and time */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-lg bg-surface-container-low p-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 rounded-lg bg-surface-container-low p-3">
                             <div className="flex items-center gap-3 min-w-0">
                                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
                                     <span className="material-symbols-outlined text-xl">
@@ -146,7 +134,7 @@ export default function UpcomingBooking() {
                                         Match Date
                                     </span>
                                     <span className="mt-1 block text-sm font-medium leading-snug text-on-surface wrap-break-word">
-                                        {booking.date}
+                                        {dateFormatter(booking.date)}
                                     </span>
                                 </div>
                             </div>
@@ -163,7 +151,7 @@ export default function UpcomingBooking() {
                                         Slot Timing
                                     </span>
                                     <span className="mt-1 block text-sm font-medium leading-snug text-on-surface">
-                                        {booking.time}
+                                        {booking.time_slots[0].start_time}
                                     </span>
                                 </div>
                             </div>
