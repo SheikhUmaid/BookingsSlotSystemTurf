@@ -67,4 +67,46 @@ const verifyOTP = async (req, res) => {
     }
 };
 
-export { sendOTP, verifyOTP };
+
+
+const updateUser = async (req,res)=>{
+    try {
+        const {name, email} = req.body;
+        
+        if (!name && !email){
+            return res.status(400).json({"message": "name or email is required"})
+        }
+        const user = await User.findById(req.user.id);
+        if(!user){
+            return res.status(404).json("message: user not found!")
+        }
+        if (name){
+            user.name = name;
+        }
+        if (email){
+            user.email = email;
+        }
+        await user.save();
+        return res.status(200).json({"message":"user updated successfully"});
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error", error: error.message });
+        
+    }
+}
+
+
+
+const getUser = async (req,res) =>{
+    try{
+        const user = await User.findById(req.user.id).select("-_id -role -accessToken -__v")
+        if(!user){
+            return res.status(404).json("message: user not found!")
+        }
+        
+        return res.status(200).json(user);
+    }catch(error){
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+}
+
+export { sendOTP, verifyOTP, updateUser, getUser };
