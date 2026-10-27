@@ -72,11 +72,20 @@ export const getBooking = (data) =>  {
 }
 
 export const createOrder = (data) =>  {
-  return authAPI.post(`payments/create-order/`, data)
+  return authAPI.post(`/payments/create-order/`, data)
   
 }
 
 export const paymentWebhook = (data)=>{
-  return authAPI.post(`payments/razorpay-webhook/`, data)
+  return authAPI.post(`/payments/razorpay-webhook/`, data)
+
+}
+
+export const getUser = ()=>{
+  return authAPI.get("/profile")
+}
+
+export const patchUser = (newData)=>{
+  return authAPI.patch("/profile", newData);
 
 }

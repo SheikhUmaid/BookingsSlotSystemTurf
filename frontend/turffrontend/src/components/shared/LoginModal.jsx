@@ -3,6 +3,7 @@ import { sendOtp, verifyOTP } from "../../services/api.service";
 export default function LoginModal({
     isOpen,
     onClose,
+    onSuccess,
 }) {
     const [phone, setPhone] = useState("");
     const [otp, setOtp] = useState("");
@@ -115,7 +116,9 @@ export default function LoginModal({
             console.log(verifyOtpToken)
             let res = await verifyOTP(verifyOtpToken, otp)
             localStorage.setItem("access_token", res.data.accessToken)
-            localStorage.setItem("is_logged_in", true)
+            localStorage.setItem("is_logged_in", "true")
+            window.dispatchEvent(new Event("auth_change"));
+            onSuccess?.(res.data);
             onClose?.();
         } catch (err) {
             setError(JSON.parse(err.request.response).message || "Incorrect OTP. Please try again.");
@@ -243,7 +246,7 @@ export default function LoginModal({
                             {step === "phone" ? "Welcome back." : "Check your phone."}
                         </h2>
 
-                        <p className="mt-2 max-w-sm text-sm leading-6 text-[#a6b3ab]">
+                        <p className="mt-2 max-w-sm text-sm leading-6 text-on-surface-variant">
                             {step === "phone"
                                 ? "Enter your mobile number to continue to your bookings."
                                 : "We've sent a one-time verification code to your mobile number."}
@@ -257,10 +260,10 @@ export default function LoginModal({
                                 }`}
                         />
                         <div
-                            className={`h-1 flex-1 rounded-full transition-colors ${step === "otp" ? "bg-emerald-400" : "bg-[#282a2c]"
+                            className={`h-1 flex-1 rounded-full transition-colors ${step === "otp" ? "bg-emerald-400" : "bg-surface-container-high"
                                 }`}
                         />
-                        <span className="ml-1 text-[10px] font-medium uppercase tracking-wider text-[#a6b3ab]">
+                        <span className="ml-1 text-[10px] font-medium uppercase tracking-wider text-on-surface-variant">
                             {step === "phone" ? "Step 1 of 2" : "Step 2 of 2"}
                         </span>
                     </div>
@@ -274,8 +277,8 @@ export default function LoginModal({
                                 Mobile number
                             </label>
 
-                            <div className="flex h-[58px] items-center overflow-hidden rounded-xl border border-white/[0.12] bg-[#1a1c1e] transition focus-within:border-emerald-400/70 focus-within:ring-2 focus-within:ring-emerald-400/10">
-                                <span className="flex h-full items-center gap-2 border-r border-white/[0.09] px-3.5 text-sm font-semibold text-white sm:px-4">
+                            <div className="flex h-14.5 items-center overflow-hidden rounded-xl border border-white/12 bg-surface-container-low transition focus-within:border-emerald-400/70 focus-within:ring-2 focus-within:ring-emerald-400/10">
+                                <span className="flex h-full items-center gap-2 border-r border-white/9 px-3.5 text-sm font-semibold text-white sm:px-4">
                                     <span className="text-base">🇮🇳</span>
                                     +91
                                 </span>
@@ -326,11 +329,11 @@ export default function LoginModal({
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="mt-7 flex h-[54px] w-full items-center justify-center gap-2 rounded-xl bg-emerald-400 px-4 text-sm font-bold text-[#052e16] transition hover:bg-emerald-300 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="mt-7 flex h-13.5 w-full items-center justify-center gap-2 rounded-xl bg-emerald-400 px-4 text-sm font-bold text-on-primary transition hover:bg-emerald-300 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 {loading ? (
                                     <>
-                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#052e16]/30 border-t-[#052e16]" />
+                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-on-primary/30 border-t-on-primary" />
                                         Sending code...
                                     </>
                                 ) : (
@@ -352,7 +355,7 @@ export default function LoginModal({
                         </form>
                     ) : (
                         <form onSubmit={handleVerifyOtp}>
-                            <div className="mb-5 flex items-center justify-between rounded-xl border border-white/[0.08] bg-[#1a1c1e] px-3.5 py-3">
+                            <div className="mb-5 flex items-center justify-between rounded-xl border border-white/8 bg-surface-container-low px-3.5 py-3">
                                 <div>
                                     <p className="text-[10px] font-semibold uppercase tracking-wider text-[#899991]">
                                         Verification sent to
@@ -365,7 +368,7 @@ export default function LoginModal({
                                 <button
                                     type="button"
                                     onClick={handleChangeNumber}
-                                    className="rounded-lg px-2 py-1.5 text-xs font-semibold text-emerald-400 transition hover:bg-emerald-400/[0.08]"
+                                    className="rounded-lg px-2 py-1.5 text-xs font-semibold text-emerald-400 transition hover:bg-emerald-400/8"
                                 >
                                     Edit
                                 </button>
@@ -390,7 +393,7 @@ export default function LoginModal({
                                 value={otp}
                                 onChange={handleOtpChange}
                                 aria-describedby={error ? "login-error" : undefined}
-                                className="h-[62px] w-full rounded-xl border border-white/[0.12] bg-[#1a1c1e] px-3 text-center font-mono text-2xl tracking-[0.45em] text-white outline-none transition placeholder:text-[#65736c] placeholder:tracking-[0.18em] focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10"
+                                className="h-15.5 w-full rounded-xl border border-white/12 bg-surface-container-low px-3 text-center font-mono text-2xl tracking-[0.45em] text-white outline-none transition placeholder:text-[#65736c] placeholder:tracking-[0.18em] focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10"
                             />
 
                             {error && (
@@ -415,11 +418,11 @@ export default function LoginModal({
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="mt-6 flex h-[54px] w-full items-center justify-center gap-2 rounded-xl bg-emerald-400 px-4 text-sm font-bold text-[#052e16] transition hover:bg-emerald-300 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="mt-6 flex h-13.5 w-full items-center justify-center gap-2 rounded-xl bg-emerald-400 px-4 text-sm font-bold text-on-primary transition hover:bg-emerald-300 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 {loading ? (
                                     <>
-                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#052e16]/30 border-t-[#052e16]" />
+                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-on-primary/30 border-t-on-primary" />
                                         Verifying...
                                     </>
                                 ) : (
@@ -430,7 +433,7 @@ export default function LoginModal({
                             <div className="mt-5 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-2 text-xs text-[#899991]">
                                 <span>Didn't receive the code?</span>
                                 {countdown > 0 ? (
-                                    <span className="font-medium text-[#a6b3ab]">
+                                    <span className="font-medium text-on-surface-variant">
                                         Resend in {countdown}s
                                     </span>
                                 ) : (
@@ -449,7 +452,7 @@ export default function LoginModal({
                                 type="button"
                                 disabled={loading}
                                 onClick={handleChangeNumber}
-                                className="mt-4 w-full rounded-lg py-2 text-xs font-medium text-[#a6b3ab] transition hover:text-white disabled:opacity-50"
+                                className="mt-4 w-full rounded-lg py-2 text-xs font-medium text-on-surface-variant transition hover:text-white disabled:opacity-50"
                             >
                                 Use a different number
                             </button>

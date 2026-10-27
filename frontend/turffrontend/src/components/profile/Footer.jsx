@@ -27,21 +27,23 @@ export default function ProfileFooter({ onLogout }) {
 
     return (
         <footer className="mt-8 flex w-full flex-col items-center px-5">
-            <button
-                type="button"
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-surface-container py-3 font-['Space_Grotesk'] text-sm font-medium text-[#ffb4ab] transition-colors hover:bg-[#93000a] hover:text-[#ffdad6] disabled:opacity-60"
-            >
-                <span
-                    className={`material-symbols-outlined text-[18px] ${isLoggingOut ? "animate-spin" : ""
-                        }`}
+            {onLogout && (
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-surface-container py-3 font-['Space_Grotesk'] text-sm font-medium text-[#ffb4ab] transition-colors hover:bg-[#93000a] hover:text-[#ffdad6] disabled:opacity-60"
                 >
-                    {isLoggingOut ? "refresh" : "logout"}
-                </span>
+                    <span
+                        className={`material-symbols-outlined text-[18px] ${isLoggingOut ? "animate-spin" : ""
+                            }`}
+                    >
+                        {isLoggingOut ? "refresh" : "logout"}
+                    </span>
 
-                {isLoggingOut ? "Signing Out..." : "Log Out Session"}
-            </button>
+                    {isLoggingOut ? "Signing Out..." : "Log Out Session"}
+                </button>
+            )}
 
             <div className="mt-5 flex flex-col items-center gap-1 text-center">
                 <div className="flex flex-wrap items-center justify-center gap-2 font-['Space_Grotesk'] text-[11px] font-semibold uppercase tracking-widest text-[#bccac0]">

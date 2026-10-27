@@ -70,7 +70,7 @@ export default function BookingHistory({bookings, isLoading}) {
                 </div>
 
                 <span className="shrink-0 text-[10px] uppercase tracking-wider text-on-surface-variant">
-                    {bookings.length + 1} Settled
+                    {bookings?.length || 0} Settled
                 </span>
             </div>
 

@@ -6,6 +6,10 @@ import { dateFormatter } from "../../services/date.service";
 export default function UpcomingBooking({booking}) {
     const [showQR, setShowQR] = useState(false);
 
+    if (!booking) {
+        return null;
+    }
+
 
     const shareBooking = async () => {
         const message = `${booking.sport} confirmed at ${booking.pitch}. ${booking.date}, ${booking.time}. Ref: ${booking.reference}`;

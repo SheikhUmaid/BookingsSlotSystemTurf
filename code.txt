@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..900;1,300..900&amp;family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#121416;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-dim": "#121416", "on-tertiary-fixed-variant": "#005236", "on-background": "#e2e2e5", "inverse-on-surface": "#2f3133", "on-secondary": "#2f3132", "tertiary-container": "#00a572", "surface-bright": "#38393c", "primary-container": "#25a475", "tertiary-fixed-dim": "#4edea3", "on-primary": "#003825", "secondary-fixed": "#e2e2e3", "on-primary-fixed": "#002114", "error": "#ffb4ab", "tertiary": "#4edea3", "on-surface-variant": "#bccac0", "on-surface": "#e2e2e5", "primary-fixed": "#85f8c4", "on-error-container": "#ffdad6", "primary-fixed-dim": "#68dba9", "secondary": "#c6c6c7", "on-tertiary-container": "#00311f", "surface-container-lowest": "#0c0e10", "surface": "#121416", "on-error": "#690005", "on-tertiary": "#003824", "inverse-surface": "#e2e2e5", "secondary-container": "#454748", "secondary-fixed-dim": "#c6c6c7", "outline-variant": "#3d4a42", "surface-container-highest": "#333537", "on-secondary-container": "#b4b5b6", "error-container": "#93000a", "surface-variant": "#333537", "surface-container-low": "#1a1c1e", "surface-container": "#1e2022", "on-primary-container": "#00311f", "on-primary-fixed-variant": "#005137", "on-tertiary-fixed": "#002113", "on-secondary-fixed-variant": "#454748", "tertiary-fixed": "#6ffbbe", "outline": "#87948b", "surface-tint": "#68dba9", "primary": "#68dba9", "surface-container-high": "#282a2c", "inverse-primary": "#006c4a", "on-secondary-fixed": "#1a1c1d", "background": "#121416" }, borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, spacing: { "gutter-mobile": "1rem", "gutter": "1.5rem", "space-lg": "2rem", "space-sm": "0.75rem", "margin-mobile": "1.25rem", "space-xs": "0.375rem", "space-xl": "3.5rem", "margin": "3rem", "space-md": "1.25rem" }, fontFamily: { "headline-sm": ["Space Grotesk"], "body-lg": ["Hanken Grotesk"], "display-lg": ["Space Grotesk"], "display-lg-mobile": ["Space Grotesk"], "body-md": ["Hanken Grotesk"], "title-editorial": ["Space Grotesk"], "label-caps": ["Space Grotesk"], "body-sm": ["Hanken Grotesk"], "headline-xl-mobile": ["Space Grotesk"], "label-md": ["Hanken Grotesk"], "headline-xl": ["Space Grotesk"], "headline-lg": ["Space Grotesk"] }, fontSize: { "headline-sm": ["1.25rem", { "lineHeight": "1.35", "letterSpacing": "0em", "fontWeight": "500" }], "body-lg": ["1.125rem", { "lineHeight": "1.6", "letterSpacing": "-0.01em", "fontWeight": "400" }], "display-lg": ["3.5rem", { "lineHeight": "1.05", "letterSpacing": "-0.03em", "fontWeight": "600" }], "display-lg-mobile": ["2.25rem", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }], "body-md": ["0.9375rem", { "lineHeight": "1.55", "letterSpacing": "0em", "fontWeight": "400" }], "title-editorial": ["0.875rem", { "lineHeight": "1.2", "letterSpacing": "0.12em", "fontWeight": "600" }], "label-caps": ["0.6875rem", { "lineHeight": "1", "letterSpacing": "0.14em", "fontWeight": "600" }], "body-sm": ["0.8125rem", { "lineHeight": "1.5", "letterSpacing": "0.01em", "fontWeight": "400" }], "headline-xl-mobile": ["1.75rem", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500" }], "label-md": ["0.875rem", { "lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "500" }], "headline-xl": ["2.5rem", { "lineHeight": "1.15", "letterSpacing": "-0.02em", "fontWeight": "500" }], "headline-lg": ["1.75rem", { "lineHeight": "1.25", "letterSpacing": "-0.015em", "fontWeight": "500" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.45)]"><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex flex-col justify-center"><div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span><span class="font-title-editorial text-title-editorial text-on-surface uppercase tracking-wider">STRIKERS YARD</span></div><div class="flex items-center gap-1 text-on-surface-variant"><span class="material-symbols-outlined text-[13px] text-primary">location_on</span><span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-normal">Downtown Arena Pitch</span></div></div><div class="flex items-center gap-space-xs"><button aria-label="Notifications" class="w-11 h-11 flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors relative"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-primary"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-1"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-20 bg-surface"><div class="flex flex-col w-full pb-8">
+<!-- Subtle pitch floodlight ambience background glow -->
+<div class="relative px-margin-mobile pt-space-xs">
+<!-- Member Greeting Ribbon -->
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-caps text-label-caps uppercase text-primary tracking-wider">Field Command</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary/60"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Tier 01</span>
+</div>
+<h1 class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface font-semibold tracking-tight">Good evening, Alex</h1>
+</div>
+<div class="flex items-center bg-surface-container-high px-space-xs py-1 rounded-full shadow-sm">
+<span class="material-symbols-outlined text-primary text-[15px] mr-1" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-caps text-label-caps text-on-surface tracking-wider uppercase">Pro Member</span>
+</div>
+</div>
+<!-- Active Match Reminder Banner (Tactile Alert Bar) -->
+<div class="w-full bg-surface-container-low rounded-xl p-space-sm mb-space-md shadow-md flex items-center justify-between group transition-all duration-300">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="relative w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[20px]">stadium</span>
+<span class="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-label-caps text-label-caps uppercase text-primary tracking-wider">Tonight • 07:00 PM</span>
+<span class="text-on-surface-variant font-label-caps">•</span>
+<span class="font-label-caps text-label-caps uppercase text-secondary">Pitch A</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface truncate font-medium">Warmup Bay opens in 42 minutes</p>
+</div>
+</div>
+<button aria-label="View match pass" class="shrink-0 ml-2 w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">qr_code_2</span>
+</button>
+</div>
+<!-- Hero Action Card: Architectural Pavilion Aesthetic -->
+<div class="relative w-full rounded-xl overflow-hidden bg-surface-container shadow-xl mb-space-lg">
+<div class="relative w-full h-56 bg-cover bg-center" data-alt="Dark high-contrast night photograph of an architectural athletic turf facility, ultra fine synthetic turf, intense focused overhead stadium floodlights slicing through light haze, dark obsidian steel frame structure, deep charcoal aesthetic with emerald glow on lush blades of turf, cinematic low angle sports photography" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBHvHM6uDbxB8C9Kf04H_BIDwfM7FrhrT_TuJzijzuqnwlvURBFrFF-utVQeidNAmsbUWvJy2Hc9ECmjG1sM8E1OFAed0vS0J6o-w7denrd4qdtlZWLB7Xt2zcDFCMgTKM--rDfv9tBvY0KDQegWLjR48hUiySvf9iiCUGLuvO1Ry8LDNtjR2Iv_HZKI393YxPg5AOIWu5eYSfD3DpJWJ9qmtfbEC8JeUJVr--fHtGRphhembrwfnvM7Q')">
+<!-- Structural Scrim Gradients -->
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container via-surface-container/70 to-transparent"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-surface-container-lowest/80 via-transparent to-transparent"></div>
+<!-- Top Status Pin -->
+<div class="absolute top-space-sm left-space-sm flex items-center gap-1.5 bg-surface-container-lowest/80 backdrop-blur-md px-2.5 py-1 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-caps text-label-caps text-on-surface uppercase tracking-wider">Floodlit 4G Open till Midnight</span>
+</div>
+<!-- Hero Content Layer -->
+<div class="absolute bottom-space-sm left-space-sm right-space-sm flex flex-col">
+<span class="font-title-editorial text-title-editorial text-primary uppercase tracking-widest mb-1">Night Circuit</span>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface leading-tight tracking-tight mb-space-sm max-w-[260px]">
+            Own The Pitch Under The Lights
+          </h2>
+<div class="flex items-center justify-between">
+<a class="inline-flex items-center gap-2 bg-primary px-space-md py-2.5 rounded-lg text-on-primary font-title-editorial text-title-editorial uppercase tracking-wider font-semibold active:scale-95 transition-transform shadow-md" href="#">
+<span>Book a Slot Now</span>
+<span class="material-symbols-outlined text-[16px] font-bold">arrow_forward</span>
+</a>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-tertiary">bolt</span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Fast Check-in</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Sport Discipline Selection -->
+<div class="mb-space-lg">
+<div class="flex items-center justify-between mb-space-sm">
+<h3 class="font-title-editorial text-title-editorial uppercase tracking-wider text-on-surface">Curated Arenas</h3>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Select Modality</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm">
+<!-- Box Cricket Card -->
+<div class="bg-surface-container rounded-xl p-space-sm flex flex-col justify-between shadow-md group active:scale-[0.98] transition-transform cursor-pointer">
+<div class="relative w-full h-24 rounded-lg overflow-hidden mb-space-xs bg-cover bg-center" data-alt="High intensity indoor box cricket cage with professional heavy duty dark boundary nets, automated robotic bowling machine glowing faintly in background, turf pitch, dark modern athletic arena interior lighting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD-ixRWa64aBLRX50PA03BpkaBzX7KTtVzJuJY9LnI9RU7jUifnf_mlf_KsFfsGc5wztUPs62Qa6tsDhkbyui8OmEDJBbqn6Urh1Ueqf8iaiBmpPhNJojnLedewXEeObif0qgbBhHwlK6JOEsfonmTb-5FyqYF-6hYUH8dWA4w3YcpQdUsKtCmZ91OWorNb8g9LhPvtXYSR9z23xYBy5HPDOVWWw0hr2dP_79MWvpX0nm_EuRQTD_LZAA')">
+<div class="absolute top-1.5 right-1.5 bg-surface-container-lowest/80 px-1.5 py-0.5 rounded font-label-caps text-label-caps text-on-surface uppercase">Cage 01-02</div>
+</div>
+<div>
+<div class="flex items-center gap-1 text-primary mb-0.5">
+<span class="material-symbols-outlined text-[16px]">sports_cricket</span>
+<span class="font-title-editorial text-title-editorial uppercase tracking-wider font-semibold">Box Cricket</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 mb-2">High-tension rebound netting &amp; Robo-Bowl v4</p>
+<div class="flex items-center justify-between pt-1">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">$38<span class="text-on-surface-variant text-[11px] font-normal">/hr</span></span>
+<span class="w-6 h-6 rounded bg-surface-container-highest flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</span>
+</div>
+</div>
+</div>
+<!-- 5v5 Football Card -->
+<div class="bg-surface-container rounded-xl p-space-sm flex flex-col justify-between shadow-md group active:scale-[0.98] transition-transform cursor-pointer">
+<div class="relative w-full h-24 rounded-lg overflow-hidden mb-space-xs bg-cover bg-center" data-alt="Premium 5v5 football turf pitch, deep green monofilament artificial grass fibers with white boundary lines, matte black goalposts, modern low key floodlights reflecting off damp turf, dark minimal athletic atmosphere" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD52RbJc0wj_ndHUQRnsOg1h2iqXjin-K_6WnFsVEXE_lHwgcFc-n-hmgZhJEeKqPKDGQVxd4Xh3YD7k0p6_Nt2RS6kAsShWMWSqD9wIuzUKZF6NybX-OdU5GNk_FCbyUpS2aRT0F3vlxMzyCKw_UFcRKkeGczgqQ_SKiFvSkbxCFCh_7tujCUIvCDfRrbWj9CRsIzl7gi-YO8aeX1PzrhjdgGcrEf0QeXCDTz8XZ-OHn1R2lNU-o3x-w')">
+<div class="absolute top-1.5 right-1.5 bg-surface-container-lowest/80 px-1.5 py-0.5 rounded font-label-caps text-label-caps text-primary uppercase">FIFA 4G</div>
+</div>
+<div>
+<div class="flex items-center gap-1 text-primary mb-0.5">
+<span class="material-symbols-outlined text-[16px]">sports_soccer</span>
+<span class="font-title-editorial text-title-editorial uppercase tracking-wider font-semibold">5v5 Football</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 mb-2">Monofilament turf, tournament acoustics</p>
+<div class="flex items-center justify-between pt-1">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">$54<span class="text-on-surface-variant text-[11px] font-normal">/hr</span></span>
+<span class="w-6 h-6 rounded bg-surface-container-highest flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Live Pitch Telemetry & Instant Booking Slots -->
+<div class="mb-space-lg">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-1.5">
+<h3 class="font-title-editorial text-title-editorial uppercase tracking-wider text-on-surface">Live Pitch Radar</h3>
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Sync: Live</span>
+</div>
+<!-- Pitch A Card -->
+<div class="bg-surface-container rounded-xl p-space-sm mb-space-xs shadow-md">
+<div class="flex items-center justify-between mb-space-xs">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<div>
+<h4 class="font-headline-sm text-headline-sm font-semibold text-on-surface">Pitch A • Main Cage</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">In Play: Semi-Pro 7s League until 07:45 PM</p>
+</div>
+</div>
+<span class="bg-surface-container-highest text-on-surface-variant px-2 py-0.5 rounded font-label-caps text-label-caps uppercase">Occupied</span>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-xs flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">alarm</span>
+<span class="font-label-md text-label-md text-on-surface font-medium">Next Slot: <span class="text-primary font-semibold">08:00 PM</span></span>
+</div>
+<button class="px-space-sm py-1 bg-primary text-on-primary rounded font-label-caps text-label-caps uppercase tracking-wider font-semibold active:opacity-80">
+            Hold 08:00 PM
+          </button>
+</div>
+</div>
+<!-- Pitch B Card -->
+<div class="bg-surface-container rounded-xl p-space-sm shadow-md">
+<div class="flex items-center justify-between mb-space-xs">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<div>
+<h4 class="font-headline-sm text-headline-sm font-semibold text-on-surface">Pitch B • Agility Bay</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">40x20m Shockpad Underlay • Ready now</p>
+</div>
+</div>
+<span class="bg-primary/20 text-primary px-2 py-0.5 rounded font-label-caps text-label-caps uppercase font-semibold">Ready</span>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-xs flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">bolt</span>
+<span class="font-label-md text-label-md text-on-surface font-medium">Instant kickoff available</span>
+</div>
+<button class="px-space-sm py-1 bg-surface-container-highest hover:bg-primary hover:text-on-primary text-on-surface rounded font-label-caps text-label-caps uppercase tracking-wider font-semibold transition-colors">
+            Reserve Bay
+          </button>
+</div>
+</div>
+</div>
+<!-- Squad Match Finder (Community Matchmaking Preview) -->
+<div class="mb-space-lg">
+<div class="flex items-center justify-between mb-space-sm">
+<h3 class="font-title-editorial text-title-editorial uppercase tracking-wider text-on-surface">Locker Room Match Finder</h3>
+<span class="font-label-caps text-label-caps text-primary uppercase">3 Open Rallies</span>
+</div>
+<div class="bg-surface-container rounded-xl p-space-md shadow-lg relative overflow-hidden">
+<div class="flex items-start justify-between mb-3">
+<div class="flex items-center gap-2.5">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-headline-sm font-semibold">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+</div>
+<div>
+<span class="font-label-caps text-label-caps text-primary uppercase tracking-wider">Tonight • Pitch A @ 08:00 PM</span>
+<h4 class="font-headline-sm text-headline-sm font-bold text-on-surface">Midnight Strikers 5v5</h4>
+</div>
+</div>
+<div class="bg-primary/10 text-primary px-2 py-0.5 rounded font-label-caps text-label-caps uppercase font-semibold">
+            Need 2
+          </div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-sm">
+          High tempo, competitive recreational run. Two midfield slots vacant after late dropout. Bibs and water provided.
+        </p>
+<!-- Squad Roster Progress Visual -->
+<div class="bg-surface-container-low rounded-lg p-2.5 mb-space-sm flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<!-- Avatars -->
+<div class="flex -space-x-2 overflow-hidden">
+<div class="inline-block h-6 w-6 rounded-full bg-surface-bright flex items-center justify-center font-label-caps text-on-surface text-[10px]">MK</div>
+<div class="inline-block h-6 w-6 rounded-full bg-surface-container-highest flex items-center justify-center font-label-caps text-on-surface text-[10px]">RL</div>
+<div class="inline-block h-6 w-6 rounded-full bg-surface-bright flex items-center justify-center font-label-caps text-on-surface text-[10px]">DS</div>
+<div class="inline-block h-6 w-6 rounded-full bg-primary/20 text-primary flex items-center justify-center font-label-caps text-[10px]">+5</div>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant ml-1 font-medium">8 / 10 Confirmed</span>
+</div>
+<div class="w-20 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 80%;"></div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex-1 bg-primary text-on-primary py-2.5 rounded-lg font-title-editorial text-title-editorial uppercase tracking-wider font-semibold flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] transition-transform" id="joinSquadBtn">
+<span class="material-symbols-outlined text-[16px]">person_add</span>
+<span id="joinSquadText">Join Squad • $6.50</span>
+</button>
+<button aria-label="Chat with match host" class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">chat_bubble_outline</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Quick Turf Re-book Strip -->
+<div class="mb-space-md">
+<div class="bg-surface-container-low rounded-xl p-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Last played Friday</span>
+<span class="font-label-md text-label-md text-on-surface font-medium">Pitch A • 60 min Box Cricket</span>
+</div>
+</div>
+<button class="px-space-sm py-1.5 rounded bg-surface-container text-on-surface hover:text-primary font-label-caps text-label-caps uppercase tracking-wider transition-colors flex items-center gap-1">
+<span>Rebook</span>
+<span class="material-symbols-outlined text-[14px]">replay</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Micro-interaction for Match Finder squad join CTA
+  const joinBtn = document.getElementById('joinSquadBtn');
+  const joinText = document.getElementById('joinSquadText');
+  
+  if (joinBtn && joinText) {
+    let joined = false;
+    joinBtn.addEventListener('click', () => {
+      joined = !joined;
+      if (joined) {
+        joinBtn.classList.remove('bg-primary', 'text-on-primary');
+        joinBtn.classList.add('bg-tertiary-container', 'text-on-tertiary-container');
+        joinText.textContent = 'Roster Confirmed ✓';
+      } else {
+        joinBtn.classList.add('bg-primary', 'text-on-primary');
+        joinBtn.classList.remove('bg-tertiary-container', 'text-on-tertiary-container');
+        joinText.textContent = 'Join Squad • $6.50';
+      }
+    });
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_12px_rgba(0,0,0,0.5)]" data-active-classes="text-primary font-medium"><div class="h-16 px-space-xs grid grid-cols-4 items-center"><a aria-current="page" class="flex flex-col items-center justify-center gap-1 min-h-[44px] py-1 transition-colors text-primary font-medium" data-path="home" href="#"><span class="material-symbols-outlined text-[22px]">home</span><span class="font-label-caps text-label-caps uppercase tracking-wider">Home</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] py-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="book-turf" href="#"><span class="material-symbols-outlined text-[22px]">sports_soccer</span><span class="font-label-caps text-label-caps uppercase tracking-wider">Book Turf</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] py-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="bookings" href="#"><span class="material-symbols-outlined text-[22px]">confirmation_number</span><span class="font-label-caps text-label-caps uppercase tracking-wider">Bookings</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] py-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="profile" href="#"><span class="material-symbols-outlined text-[22px]">person</span><span class="font-label-caps text-label-caps uppercase tracking-wider">Profile</span></a></div></nav></body></html>
