@@ -1,7 +1,7 @@
 import "dotenv/config";
 import mongoose from "mongoose";
 import timeSlot from "../models/time_slot.model.js";
-
+import User from "../models/user.model.js"
 
 const timeSlots = [
     {
@@ -63,18 +63,23 @@ const timeSlots = [
 async function seedTimeSlots() {
   try {
     await mongoose.connect(process.env.DATABASE_URL);
-
+    
     console.log("MongoDB connected for seeding");
 
     await timeSlot.insertMany(timeSlots);
-
+    
     console.log("Time slots seeded successfully");
-  } catch (error) {
+} catch (error) {
     console.error("Error seeding time slots:", error);
     process.exitCode = 1;
   } finally {
     await mongoose.disconnect();
   }
 }
+
+
+
+
+
 
 await seedTimeSlots();

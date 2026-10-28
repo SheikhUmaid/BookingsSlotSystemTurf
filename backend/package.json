@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "seed:time_slots": "node data/seed.time_slots.js"
+    "seed:time_slots": "node data/seed.time_slots.js",
+    "seed:admin":"node data/seed.admin.js"
   },
   "keywords": [],
   "author": "",
