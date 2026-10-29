@@ -3,7 +3,7 @@ import axios from 'axios';
 
 
 const authAPI = axios.create({
-    baseURL: "http://127.0.0.1:5000/api", withCredentials: true,
+    baseURL: "http://10.168.78.5:5000/api", withCredentials: true,
 });
 
 

@@ -5,6 +5,7 @@ import BottomNavbar from "./components/shared/BottomNavBar.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import HomePage from "./pages/Home.jsx";
 import {Toaster} from "react-hot-toast"
+import InstallAppButton from "./components/shared/InstallAppButton.jsx";
 
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
   return (
     <>
     <Toaster />
+    <InstallAppButton />
     <BrowserRouter>
       <main className="min-h-screen bg-[#0b0d0e] pb-24">
         <Routes>

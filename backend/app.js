@@ -7,7 +7,15 @@ import serviceRoutes from "./routes/service.router.js";
 import "./services/cron.service.js"; // Import the cron service to start the scheduled tasks
 import paymentsRouter from "./routes/payments.router.js";
 import couponsRouter from "./routes/coupons.router.js";
-import profileRouter from  "./routes/profile.router.js"
+import profileRouter from "./routes/profile.router.js";
+import adminBookingsRouter from "./routes/admin/bookings.router.js";
+import adminTimeSlotsRouter from "./routes/admin/timslots.router.js";
+import adminServicesRouter from "./routes/admin/services.router.js";
+import adminDashboardRouter from "./routes/admin/dashboard.router.js";
+import adminCouponRouter from "./routes/admin/coupon.router.js";
+import adminSettingsRouter from "./routes/admin/settings.router.js";
+import authMiddleware from "./middlewares/auth.middleware.js";
+import adminMiddleware from "./middlewares/admin.middleware.js";
 import cors from "cors";
 import morgan from "morgan";
 
@@ -16,14 +24,22 @@ const app = express();
 
 app.use(
     cors({
-        origin: [
-            "http://localhost:5173",
-            "http://127.0.0.1:5173",
-            "http://localhost:5501",
-            "http://127.0.0.1:5501",
-            "https://9jv5v14k-5000.inc1.devtunnels.ms/"
-            // Add your FRONTEND ngrok URL here if applicable
-        ],
+        origin: (origin, callback) => {
+            // Allow requests with no origin (mobile apps, curl, server-to-server)
+            if (!origin) return callback(null, true);
+
+            // Allow any localhost/127.0.0.1 port in development or dev tunnels
+            if (
+                origin.startsWith("http://localhost:") ||
+                origin.startsWith("http://127.0.0.1:") ||
+                origin.startsWith("http://10.168.78.5:") ||
+                origin.startsWith("https://9jv5v14k-5000.inc1.devtunnels.ms")
+            ) {
+                return callback(null, true);
+            }
+
+            callback(new Error(`CORS: origin '${origin}' not allowed`));
+        },
         credentials: true,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"],
@@ -47,6 +63,14 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/coupons", couponsRouter);
 app.use("/api/profile/", profileRouter);
+
+// Admin routes — protected by both auth and admin role guards
+app.use("/api/admin/bookings", authMiddleware, adminMiddleware, adminBookingsRouter);
+app.use("/api/admin/time-slots", authMiddleware, adminMiddleware, adminTimeSlotsRouter);
+app.use("/api/admin/services", authMiddleware, adminMiddleware, adminServicesRouter);
+app.use("/api/admin/dashboard", authMiddleware, adminMiddleware, adminDashboardRouter);
+app.use("/api/admin/coupons", authMiddleware, adminMiddleware, adminCouponRouter);
+app.use("/api/admin/settings", authMiddleware, adminMiddleware, adminSettingsRouter);
 
 
 export default app;

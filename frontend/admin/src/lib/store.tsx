@@ -54,7 +54,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         bookings,
         createBooking,
         draft,
-        openBooking: (d) => setDraft({ serviceId: services[0]!.id, date: fmtDate(today), ...d }),
+        openBooking: (d) => setDraft({ date: fmtDate(today), ...d }),
         closeBooking: () => setDraft(null),
       }}
     >
