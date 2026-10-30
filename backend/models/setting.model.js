@@ -39,6 +39,24 @@ const settingSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        deploymentStatus: {
+            type: String,
+            enum: ["active", "inactive", "suspended"],
+            default: "active",
+            required: true,
+        },
+        deploymentId: {
+            type: String,
+            default: "DEP-0001",
+        },
+        bookingEnabled: {
+            type: Boolean,
+            default: true,
+        },
+        subscriptionExpiresAt: {
+            type: Date,
+            default: () => new Date("2026-11-29T00:00:00.000Z"),
+        },
     },
     { timestamps: true }
 );

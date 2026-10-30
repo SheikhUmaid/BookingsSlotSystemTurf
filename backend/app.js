@@ -14,8 +14,10 @@ import adminServicesRouter from "./routes/admin/services.router.js";
 import adminDashboardRouter from "./routes/admin/dashboard.router.js";
 import adminCouponRouter from "./routes/admin/coupon.router.js";
 import adminSettingsRouter from "./routes/admin/settings.router.js";
+import adminSubscriptionRouter from "./routes/admin/subscription.router.js";
 import authMiddleware from "./middlewares/auth.middleware.js";
 import adminMiddleware from "./middlewares/admin.middleware.js";
+import subscriptionGuard from "./middlewares/subscription.middleware.js";
 import cors from "cors";
 import morgan from "morgan";
 
@@ -57,6 +59,9 @@ app.use(express.json());
 
 
 
+// Global subscription write guard: blocks POST, PUT, PATCH, DELETE when deploymentStatus !== "active"
+app.use(subscriptionGuard);
+
 app.use("/api/auth", authRoutes);
 app.use("/api/time-slots", timeSlotRoutes);
 app.use("/api/bookings", bookingRoutes);
@@ -71,6 +76,7 @@ app.use("/api/admin/services", authMiddleware, adminMiddleware, adminServicesRou
 app.use("/api/admin/dashboard", authMiddleware, adminMiddleware, adminDashboardRouter);
 app.use("/api/admin/coupons", authMiddleware, adminMiddleware, adminCouponRouter);
 app.use("/api/admin/settings", authMiddleware, adminMiddleware, adminSettingsRouter);
+app.use("/api/admin/subscription", authMiddleware, adminMiddleware, adminSubscriptionRouter);
 
 
 export default app;

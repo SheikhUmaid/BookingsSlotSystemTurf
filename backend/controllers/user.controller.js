@@ -1,7 +1,67 @@
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
+const adminLogin = async (req, res) => {
+    try {
+        const { identifier, phone, email, password } = req.body;
+        const loginIdentifier = identifier || phone || email;
 
+        if (!loginIdentifier || !password) {
+            return res.status(400).json({ message: "Identifier (phone or email) and password are required" });
+        }
+
+        const user = await User.findOne({
+            $or: [{ phone: loginIdentifier }, { email: loginIdentifier.toLowerCase() }],
+            role: "admin",
+        });
+
+        if (!user) {
+            return res.status(401).json({ message: "Invalid credentials or not authorized as admin" });
+        }
+
+        let isMatch = false;
+        if (user.password) {
+            if (user.password.startsWith("$2b$") || user.password.startsWith("$2a$")) {
+                isMatch = await bcrypt.compare(password, user.password);
+            } else {
+                isMatch = user.password === password;
+            }
+        }
+
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
+
+        const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+            expiresIn: "180d",
+        });
+        user.accessToken = accessToken;
+        await user.save();
+
+        res.cookie("accessToken", accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "none",
+            maxAge: 180 * 24 * 60 * 60 * 1000,
+        });
+
+        return res.status(200).json({
+            message: "Admin login successful",
+            accessToken,
+            user: {
+                id: user._id,
+                name: user.name || "Admin",
+                email: user.email,
+                phone: user.phone,
+                role: user.role,
+            },
+        });
+    } catch (error) {
+        console.error("Admin login error:", error);
+        return res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+};
 
 const sendOTP = async (req, res) => {
     try {
@@ -109,4 +169,4 @@ const getUser = async (req,res) =>{
     }
 }
 
-export { sendOTP, verifyOTP, updateUser, getUser };
+export { adminLogin, sendOTP, verifyOTP, updateUser, getUser };
