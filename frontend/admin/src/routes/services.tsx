@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PageHeader, Panel, selectCls } from "@/components/turf/ui-bits";
 import { pageMeta } from "@/lib/meta";
 import { adminFetch } from "@/lib/api";
+import { useSubscription } from "@/lib/useSubscription";
 
 export const Route = createFileRoute("/services")({
   head: () => pageMeta("Services / Pitches", "Manage the pitches and courts customers can book."),
@@ -50,6 +51,7 @@ const icons: Record<string, typeof Goal> = {
 
 function ServicesPage() {
   const queryClient = useQueryClient();
+  const { isInactive, status } = useSubscription();
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
@@ -154,9 +156,15 @@ function ServicesPage() {
         title="Services / Pitches"
         desc={isLoading ? "Loading services…" : `${list.length} services`}
         actions={
-          <Button size="sm" onClick={openAddDialog}>
-            <Plus className="size-4" /> Add Service
-          </Button>
+          isInactive ? (
+            <Button size="sm" disabled className="gap-1.5 opacity-60">
+              <Plus className="size-4" /> Add Service (Locked)
+            </Button>
+          ) : (
+            <Button size="sm" onClick={openAddDialog}>
+              <Plus className="size-4" /> Add Service
+            </Button>
+          )
         }
       />
 
@@ -189,16 +197,18 @@ function ServicesPage() {
                     </div>
                     <div className="flex gap-1">
                       <button
-                        title="Edit service"
+                        title={isInactive ? "Account inactive (read only)" : "Edit service"}
+                        disabled={isInactive}
                         onClick={() => openEditDialog(s)}
-                        className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
                       >
                         <Pencil className="size-3.5" />
                       </button>
                       <button
-                        title="Delete service"
+                        title={isInactive ? "Account inactive (read only)" : "Delete service"}
+                        disabled={isInactive}
                         onClick={() => setDeletingService(s)}
-                        className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-danger-soft hover:text-destructive"
+                        className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-danger-soft hover:text-destructive disabled:opacity-40 disabled:hover:bg-transparent"
                       >
                         <Trash2 className="size-3.5" />
                       </button>

@@ -52,13 +52,13 @@ export function MonthCalendar({
         </div>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center">
-        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-          <div key={d} className="pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        {["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((d) => (
+          <div key={d} className="pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground">
             {d}
           </div>
         ))}
         {cells.map((d, i) => {
-          if (!d) return <div key={i} />;
+          if (!d) return <div key={i} className="h-10" />;
           const ds = fmtDate(d);
           const st = dayState(ds);
           const isSel = ds === selected;
@@ -66,23 +66,29 @@ export function MonthCalendar({
           return (
             <button
               key={i}
+              type="button"
               onClick={() => onSelect(ds)}
               className={cn(
-                "relative flex h-11 flex-col items-center justify-center rounded-md border border-transparent text-[13px] transition-colors",
-                st === "past" ? "text-muted-foreground/60 hover:bg-secondary" : "hover:border-primary/30 hover:bg-primary-soft",
-                isToday && !isSel && "border-primary/40 font-semibold text-primary",
-                isSel && "border-primary bg-primary font-semibold text-primary-foreground hover:bg-primary",
+                "relative flex h-10 flex-col items-center justify-center rounded-lg border border-transparent text-[13px] font-medium transition-all",
+                st === "past"
+                  ? "text-muted-foreground/50 hover:bg-muted/50"
+                  : "text-foreground hover:bg-accent/60",
+                isToday && !isSel && "border-blue-500 font-semibold text-blue-600",
+                isSel && "border-blue-600 bg-blue-600 font-semibold text-white shadow-sm hover:bg-blue-600"
               )}
             >
-              {d.getDate()}
-              {st !== "past" && (
+              <span>{d.getDate()}</span>
+              {(st !== "past" || isSel) && (
                 <span
                   className={cn(
-                    "absolute bottom-1.5 size-1 rounded-full",
-                    st === "open" && "bg-success",
-                    st === "limited" && "bg-warning",
-                    st === "full" && "bg-destructive",
-                    isSel && "bg-primary-foreground",
+                    "absolute bottom-1 size-1 rounded-full",
+                    isSel
+                      ? "bg-white"
+                      : st === "open"
+                      ? "bg-emerald-500"
+                      : st === "limited"
+                      ? "bg-amber-500"
+                      : "bg-red-500"
                   )}
                 />
               )}
@@ -90,12 +96,18 @@ export function MonthCalendar({
           );
         })}
       </div>
-      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 border-t pt-3 text-[11.5px] text-muted-foreground">
-        <Legend cls="bg-success" label="Open" />
-        <Legend cls="bg-warning" label="Limited" />
-        <Legend cls="bg-destructive" label="Fully booked" />
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t pt-3 text-[11.5px] text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <span className="size-3 rounded border border-primary/40" /> Today
+          <span className="size-2 rounded-full bg-emerald-500" /> Open
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="size-2 rounded-full bg-amber-500" /> Limited
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="size-2 rounded-full bg-red-500" /> Fully booked
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="size-3 rounded border border-blue-500" /> Today
         </span>
       </div>
     </div>

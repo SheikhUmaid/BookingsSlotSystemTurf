@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BookingsRouteImport } from './routes/bookings'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as CouponsRouteImport } from './routes/coupons'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ServicesRouteImport } from './routes/services'
@@ -36,6 +37,11 @@ const CalendarRoute = CalendarRouteImport.update({
 const CouponsRoute = CouponsRouteImport.update({
   id: '/coupons',
   path: '/coupons',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PaymentsRoute = PaymentsRouteImport.update({
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/bookings': typeof BookingsRoute
   '/calendar': typeof CalendarRoute
   '/coupons': typeof CouponsRoute
+  '/login': typeof LoginRoute
   '/payments': typeof PaymentsRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/bookings': typeof BookingsRoute
   '/calendar': typeof CalendarRoute
   '/coupons': typeof CouponsRoute
+  '/login': typeof LoginRoute
   '/payments': typeof PaymentsRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/bookings': typeof BookingsRoute
   '/calendar': typeof CalendarRoute
   '/coupons': typeof CouponsRoute
+  '/login': typeof LoginRoute
   '/payments': typeof PaymentsRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/bookings'
     | '/calendar'
     | '/coupons'
+    | '/login'
     | '/payments'
     | '/pricing'
     | '/services'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/bookings'
     | '/calendar'
     | '/coupons'
+    | '/login'
     | '/payments'
     | '/pricing'
     | '/services'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/bookings'
     | '/calendar'
     | '/coupons'
+    | '/login'
     | '/payments'
     | '/pricing'
     | '/services'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   BookingsRoute: typeof BookingsRoute
   CalendarRoute: typeof CalendarRoute
   CouponsRoute: typeof CouponsRoute
+  LoginRoute: typeof LoginRoute
   PaymentsRoute: typeof PaymentsRoute
   PricingRoute: typeof PricingRoute
   ServicesRoute: typeof ServicesRoute
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/coupons'
       fullPath: '/coupons'
       preLoaderRoute: typeof CouponsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payments': {
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookingsRoute: BookingsRoute,
   CalendarRoute: CalendarRoute,
   CouponsRoute: CouponsRoute,
+  LoginRoute: LoginRoute,
   PaymentsRoute: PaymentsRoute,
   PricingRoute: PricingRoute,
   ServicesRoute: ServicesRoute,

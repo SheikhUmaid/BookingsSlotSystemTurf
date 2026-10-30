@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { PageHeader, Panel, PanelHead } from "@/components/turf/ui-bits";
 import { pageMeta } from "@/lib/meta";
 import { adminFetch } from "@/lib/api";
+import { useSubscription } from "@/lib/useSubscription";
 
 export const Route = createFileRoute("/settings")({
   head: () => pageMeta("Settings", "Business details, preferences and account security."),
@@ -44,6 +45,7 @@ const defaultSettings: BusinessSettings = {
 
 function SettingsPage() {
   const queryClient = useQueryClient();
+  const { isInactive, status } = useSubscription();
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
@@ -246,11 +248,13 @@ function SettingsPage() {
           </label>
         </div>
         <div className="border-t p-3 text-right">
-          <Button onClick={handleSaveSettings} disabled={savingSettings || isLoading}>
+          <Button onClick={handleSaveSettings} disabled={savingSettings || isLoading || isInactive}>
             {savingSettings ? (
               <>
                 <Loader2 className="mr-1.5 size-4 animate-spin" /> Saving…
               </>
+            ) : isInactive ? (
+              "Save locked (Account Inactive)"
             ) : (
               <>
                 <Save className="mr-1.5 size-4" /> Save changes

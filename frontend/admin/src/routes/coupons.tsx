@@ -21,6 +21,7 @@ import { Switch } from "@/components/ui/switch";
 import { PageHeader, Panel, StatusBadge, Td, Th } from "@/components/turf/ui-bits";
 import { pageMeta } from "@/lib/meta";
 import { adminFetch } from "@/lib/api";
+import { useSubscription } from "@/lib/useSubscription";
 
 export const Route = createFileRoute("/coupons")({
   head: () => pageMeta("Coupons", "Create and track percentage discount coupons."),
@@ -72,6 +73,7 @@ const emptyForm: CouponForm = {
 
 function CouponsPage() {
   const queryClient = useQueryClient();
+  const { isInactive, status } = useSubscription();
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
@@ -222,9 +224,15 @@ function CouponsPage() {
         title="Coupons"
         desc={isLoading ? "Loading coupons…" : `${list.length} discount coupons configured.`}
         actions={
-          <Button size="sm" onClick={openAddDialog}>
-            <Plus className="size-4" /> Create Coupon
-          </Button>
+          isInactive ? (
+            <Button size="sm" disabled className="gap-1.5 opacity-60">
+              <Plus className="size-4" /> Create Coupon (Locked)
+            </Button>
+          ) : (
+            <Button size="sm" onClick={openAddDialog}>
+              <Plus className="size-4" /> Create Coupon
+            </Button>
+          )
         }
       />
 
@@ -288,10 +296,10 @@ function CouponsPage() {
                       </Td>
                       <Td>
                         <button
-                          onClick={() => toggleStatus(c)}
-                          disabled={togglingId === c._id}
+                          onClick={() => !isInactive && toggleStatus(c)}
+                          disabled={togglingId === c._id || isInactive}
                           className="transition-opacity hover:opacity-80 disabled:opacity-50"
-                          title="Click to toggle active status"
+                          title={isInactive ? "Account inactive (read only)" : "Click to toggle active status"}
                         >
                           <StatusBadge status={c.active ? "Active" : "Inactive"} />
                         </button>
@@ -299,16 +307,18 @@ function CouponsPage() {
                       <Td className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
-                            title="Edit coupon"
+                            title={isInactive ? "Account inactive (read only)" : "Edit coupon"}
+                            disabled={isInactive}
                             onClick={() => openEditDialog(c)}
-                            className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+                            className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
                           >
                             <Pencil className="size-3.5" />
                           </button>
                           <button
-                            title="Delete coupon"
+                            title={isInactive ? "Account inactive (read only)" : "Delete coupon"}
+                            disabled={isInactive}
                             onClick={() => setDeletingCoupon(c)}
-                            className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-danger-soft hover:text-destructive"
+                            className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-danger-soft hover:text-destructive disabled:opacity-40 disabled:hover:bg-transparent"
                           >
                             <Trash2 className="size-3.5" />
                           </button>

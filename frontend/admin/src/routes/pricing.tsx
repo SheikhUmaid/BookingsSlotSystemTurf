@@ -21,6 +21,7 @@ import { inr, slotCategories, type SlotCategory } from "@/lib/turf-data";
 import { PageHeader, Panel, Td, Th, selectCls } from "@/components/turf/ui-bits";
 import { pageMeta } from "@/lib/meta";
 import { adminFetch } from "@/lib/api";
+import { useSubscription } from "@/lib/useSubscription";
 
 export const Route = createFileRoute("/pricing")({
   head: () => pageMeta("Time Slots & Pricing", "Recurring slot definitions and hourly prices by session."),
@@ -65,6 +66,7 @@ const to12 = (t?: string) => {
 
 function PricingPage() {
   const queryClient = useQueryClient();
+  const { isInactive, status } = useSubscription();
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
@@ -191,9 +193,15 @@ function PricingPage() {
             : `${slots.length} recurring slot definitions configured.`
         }
         actions={
-          <Button size="sm" onClick={openAddDialog}>
-            <Plus className="size-4" /> Add Time Slot
-          </Button>
+          isInactive ? (
+            <Button size="sm" disabled className="gap-1.5 opacity-60">
+              <Plus className="size-4" /> Add Time Slot (Locked)
+            </Button>
+          ) : (
+            <Button size="sm" onClick={openAddDialog}>
+              <Plus className="size-4" /> Add Time Slot
+            </Button>
+          )
         }
       />
 
@@ -252,15 +260,19 @@ function PricingPage() {
                           <div className="flex items-center justify-end gap-1">
                             <button
                               aria-label="Edit price"
+                              title={isInactive ? "Account inactive (read only)" : "Edit slot"}
+                              disabled={isInactive}
                               onClick={() => openEditDialog(s)}
-                              className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+                              className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
                             >
                               <Pencil className="size-3.5" />
                             </button>
                             <button
                               aria-label="Delete slot"
+                              title={isInactive ? "Account inactive (read only)" : "Delete slot"}
+                              disabled={isInactive}
                               onClick={() => setDeletingSlot(s)}
-                              className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-danger-soft hover:text-destructive"
+                              className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-danger-soft hover:text-destructive disabled:opacity-40 disabled:hover:bg-transparent"
                             >
                               <Trash2 className="size-3.5" />
                             </button>

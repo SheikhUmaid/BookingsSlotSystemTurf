@@ -10,6 +10,7 @@ import { useStore } from "@/lib/store";
 import { inr } from "@/lib/turf-data";
 import { selectCls } from "./ui-bits";
 import { adminFetch } from "@/lib/api";
+import { useSubscription } from "@/lib/useSubscription";
 
 interface ApiSlotItem {
   _id: string;
@@ -38,6 +39,7 @@ const to12 = (t?: string) => {
 export function BookingModal() {
   const { draft, closeBooking } = useStore();
   const queryClient = useQueryClient();
+  const { isInactive, status } = useSubscription();
   const open = !!draft;
 
   const [date, setDate] = useState("");
@@ -87,6 +89,10 @@ export function BookingModal() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isInactive) {
+      toast.error(`Account is ${status.toUpperCase()}. Write access is blocked until subscription is renewed.`);
+      return;
+    }
     const errs: typeof errors = {};
     if (name.trim().length < 2) errs.name = "Enter the customer's name";
     const cleanPhone = phone.replace(/\D/g, "").slice(-10);
@@ -257,12 +263,14 @@ export function BookingModal() {
             <Button type="button" variant="outline" onClick={closeBooking} disabled={submitting}>
               Cancel
             </Button>
-            <Button type="submit" disabled={submitting}>
+            <Button type="submit" disabled={submitting || isInactive}>
               {submitting ? (
                 <>
                   <Loader2 className="mr-1.5 size-4 animate-spin" />
                   Booking…
                 </>
+              ) : isInactive ? (
+                "Locked (Account Inactive)"
               ) : (
                 "Confirm Booking"
               )}
