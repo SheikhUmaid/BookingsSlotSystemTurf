@@ -153,7 +153,7 @@ function PaymentsPage() {
 
   const planAmount = selectedPlan === "monthly" ? 2999 : 29999;
   const fakeUpiId = "zinthlabs@icici";
-  const fakeQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=${fakeUpiId}&pn=Zinth%20Labs%20Turf%20OS&am=${planAmount}&cu=INR&tn=Deployment%20${subData?.deploymentId || "DEP-0001"}`;
+  const fakeQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=${fakeUpiId}&pn=TurfOS%20by%20Zinth%20Labs&am=${planAmount}&cu=INR&tn=Deployment%20${subData?.deploymentId || "DEP-0001"}`;
 
   const handleSimulatePayment = () => {
     setVerifyingPayment(true);
@@ -185,7 +185,7 @@ function PaymentsPage() {
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11.5px] font-semibold tracking-wide text-primary uppercase">
-                <Zap className="size-3.5 fill-current" /> Zinth OS Deployment
+                <Zap className="size-3.5 fill-current" /> TurfOS by Zinth Labs
               </span>
               <span className="font-mono text-[13px] font-bold text-foreground">
                 {subData?.deploymentId || "DEP-0001"}
@@ -425,10 +425,10 @@ function PaymentsPage() {
           <DialogHeader>
             <div className="flex items-center gap-2 text-primary">
               <Sparkles className="size-5" />
-              <DialogTitle className="text-[17px]">Renew Turf OS Subscription</DialogTitle>
+              <DialogTitle className="text-[17px]">Renew TurfOS Subscription</DialogTitle>
             </div>
             <DialogDescription className="text-[12.5px]">
-              Deploy ID: <strong className="font-mono text-foreground">{subData?.deploymentId || "DEP-0001"}</strong> · Select your renewal plan and scan to pay.
+              Deploy ID: <strong className="font-mono text-foreground">{subData?.deploymentId || "DEP-0001"}</strong> · TurfOS by Zinth Labs (Digital Product Studio)
             </DialogDescription>
           </DialogHeader>
 

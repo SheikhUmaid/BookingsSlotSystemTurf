@@ -334,6 +334,25 @@ function SettingsPage() {
           </div>
         </form>
       </Panel>
+
+      {/* ─────────────────── TURFOS & ZINTH LABS PLATFORM INFO ─────────────────── */}
+      <Panel className="border border-border/80 bg-gradient-to-r from-card via-card to-primary-soft/10 p-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-[14.5px] font-bold text-foreground">TurfOS</h3>
+              <span className="rounded bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">v2.4 Enterprise</span>
+            </div>
+            <p className="text-[12.5px] text-muted-foreground">
+              Engineered by <strong className="text-foreground">Zinth Labs</strong> — a digital product studio building specialized sports and venue operating software.
+            </p>
+          </div>
+          <div className="text-[11.5px] text-muted-foreground sm:text-right shrink-0">
+            <div>Support: <a href="mailto:support@zinthlabs.in" className="text-primary hover:underline">support@zinthlabs.in</a></div>
+            <div className="text-[11px]">zinthlabs.in</div>
+          </div>
+        </div>
+      </Panel>
     </div>
   );
 }

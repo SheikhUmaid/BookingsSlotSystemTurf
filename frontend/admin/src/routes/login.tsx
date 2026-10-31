@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { pageMeta } from "@/lib/meta";
 
 export const Route = createFileRoute("/login")({
-  head: () => pageMeta("Admin Login", "Sign in to Green Arena Turf Admin Console."),
+  head: () => pageMeta("Admin Login", "Sign in to TurfOS by Zinth Labs — digital product studio."),
   component: LoginPage,
 });
 
@@ -76,13 +76,18 @@ function LoginPage() {
     <div className="flex min-h-screen w-full items-center justify-center bg-surface px-4 py-12">
       <div className="w-full max-w-md space-y-6">
         {/* Brand Header */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-2.5">
           <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
             <Goal className="size-6" />
           </div>
-          <h1 className="text-[22px] font-bold tracking-tight text-foreground sm:text-[24px]">
-            Turf Admin Console
-          </h1>
+          <div>
+            <h1 className="text-[24px] font-bold tracking-tight text-foreground sm:text-[26px]">
+              TurfOS
+            </h1>
+            <p className="text-[13px] font-medium text-primary">
+              by Zinth Labs
+            </p>
+          </div>
           <p className="text-[13px] text-muted-foreground">
             Sign in with your admin credentials to manage bookings, pitches & availability.
           </p>
@@ -153,7 +158,7 @@ function LoginPage() {
 
           <div className="mt-5 rounded-lg border border-primary/20 bg-primary-soft/30 p-3 text-[11.5px] text-muted-foreground">
             <div className="flex items-center gap-1.5 font-semibold text-foreground">
-              <ShieldCheck className="size-3.5 text-primary" /> Admin Security
+              <ShieldCheck className="size-3.5 text-primary" /> TurfOS Admin Security
             </div>
             <p className="mt-1">
               Access is restricted strictly to registered turf administrators.
@@ -161,9 +166,14 @@ function LoginPage() {
           </div>
         </div>
 
-        <p className="text-center text-[12px] text-muted-foreground">
-          Powered by Zinth Labs Turf Management OS
-        </p>
+        <div className="text-center space-y-1 text-[12px] text-muted-foreground">
+          <p className="font-medium text-foreground/85">
+            TurfOS <span className="text-muted-foreground/60">•</span> by Zinth Labs
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            Zinth Labs is a digital product studio
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -76,12 +76,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen w-full bg-surface">
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-[220px] flex-col border-r bg-sidebar md:flex">
         <div className="flex h-14 items-center gap-2.5 border-b px-4">
-          <div className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground">
+          <div className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground shadow-xs">
             <Goal className="size-4.5" />
           </div>
           <div className="leading-tight">
-            <div className="text-[13.5px] font-semibold">Turf Booking</div>
-            <div className="text-[11px] text-muted-foreground">Admin console</div>
+            <div className="text-[14px] font-bold tracking-tight text-foreground">TurfOS</div>
+            <div className="text-[10.5px] font-medium text-muted-foreground">by Zinth Labs</div>
           </div>
         </div>
         <nav className="flex-1 space-y-0.5 p-2.5">
@@ -120,6 +120,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               <LogOut className="size-4" />
             </button>
           </div>
+          <div className="mt-1 px-2 pt-1 border-t border-border/40 text-[10px] text-muted-foreground/75">
+            Zinth Labs · Digital product studio
+          </div>
         </div>
       </aside>
 
@@ -144,7 +147,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b bg-background px-5">
           <div className="text-[13px] text-muted-foreground">
-            Admin <span className="mx-1">/</span> <span className="font-medium text-foreground">{current.label}</span>
+            <span className="font-semibold text-foreground/80">TurfOS</span> <span className="mx-1">/</span> <span className="font-medium text-foreground">{current.label}</span>
           </div>
           <div className="relative ml-auto hidden w-64 lg:block">
             <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -167,8 +170,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
               <ChevronDown className="size-3.5 text-muted-foreground" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>{adminName}</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuLabel>
+                <div className="font-semibold text-foreground">{adminName}</div>
+                <div className="text-[10.5px] font-normal text-muted-foreground">TurfOS by Zinth Labs</div>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link to="/settings">Settings</Link>
