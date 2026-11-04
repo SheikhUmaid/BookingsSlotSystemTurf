@@ -60,9 +60,15 @@
   --color-warning-soft: var(--warning-soft);
   --color-danger-soft: var(--danger-soft);
   --color-surface: var(--surface);
+  /* Zinth Labs brand ink — used for brand blocks (logo, footer) */
+  --ink: oklch(0.17 0 0);
+  --ink-foreground: oklch(0.97 0 0);
   --shadow-card: var(--shadow-card);
   --shadow-pop: var(--shadow-pop);
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Barlow Condensed", "Oswald", ui-sans-serif, system-ui, sans-serif;
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
@@ -80,16 +86,16 @@
   --card-foreground: oklch(0.24 0.015 260);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.24 0.015 260);
-  --primary: oklch(0.55 0.19 258);
+  --primary: oklch(0.66 0.21 41);
   --primary-foreground: oklch(0.99 0 0);
-  --primary-soft: oklch(0.965 0.025 255);
-  --primary-soft-foreground: oklch(0.45 0.17 258);
+  --primary-soft: oklch(0.965 0.03 55);
+  --primary-soft-foreground: oklch(0.5 0.17 41);
   --secondary: oklch(0.97 0.004 260);
   --secondary-foreground: oklch(0.3 0.015 260);
   --muted: oklch(0.975 0.003 260);
   --muted-foreground: oklch(0.54 0.015 260);
-  --accent: oklch(0.965 0.02 255);
-  --accent-foreground: oklch(0.4 0.15 258);
+  --accent: oklch(0.97 0.025 55);
+  --accent-foreground: oklch(0.47 0.16 41);
   --destructive: oklch(0.58 0.21 27);
   --destructive-foreground: oklch(0.99 0 0);
   --success: oklch(0.6 0.15 155);
@@ -100,20 +106,23 @@
   --surface: oklch(0.982 0.003 260);
   --border: oklch(0.925 0.006 260);
   --input: oklch(0.91 0.006 260);
-  --ring: oklch(0.55 0.19 258);
-  --chart-1: oklch(0.55 0.19 258);
+  --ring: oklch(0.66 0.21 41);
+  --chart-1: oklch(0.66 0.21 41);
   --chart-2: oklch(0.6 0.15 155);
   --chart-3: oklch(0.7 0.15 70);
   --chart-4: oklch(0.58 0.21 27);
-  --chart-5: oklch(0.7 0.02 260);
+  --chart-5: oklch(0.3 0 0);
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.35 0.015 260);
-  --sidebar-primary: oklch(0.55 0.19 258);
+  --sidebar-primary: oklch(0.66 0.21 41);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.965 0.025 255);
-  --sidebar-accent-foreground: oklch(0.45 0.17 258);
+  --sidebar-accent: oklch(0.965 0.03 55);
+  --sidebar-accent-foreground: oklch(0.5 0.17 41);
   --sidebar-border: oklch(0.925 0.006 260);
-  --sidebar-ring: oklch(0.55 0.19 258);
+  --sidebar-ring: oklch(0.66 0.21 41);
+  /* Zinth Labs brand ink — used for brand blocks (logo, footer) */
+  --ink: oklch(0.17 0 0);
+  --ink-foreground: oklch(0.97 0 0);
   --shadow-card: 0 1px 2px oklch(0.24 0.015 260 / 0.04), 0 1px 3px oklch(0.24 0.015 260 / 0.04);
   --shadow-pop: 0 8px 24px -8px oklch(0.24 0.015 260 / 0.16);
 }

@@ -24,7 +24,7 @@ import { adminFetch } from "@/lib/api";
 import { useSubscription } from "@/lib/useSubscription";
 
 export const Route = createFileRoute("/services")({
-  head: () => pageMeta("Services / Pitches", "Manage the pitches and courts customers can book."),
+  head: () => pageMeta("Services", "Manage the sports customers can book."),
   component: ServicesPage,
 });
 
@@ -153,7 +153,7 @@ function ServicesPage() {
   return (
     <div>
       <PageHeader
-        title="Services / Pitches"
+        title="Services"
         desc={isLoading ? "Loading services…" : `${list.length} services`}
         actions={
           isInactive ? (
@@ -230,7 +230,7 @@ function ServicesPage() {
         <div className="rounded-lg border bg-card p-12 text-center">
           <p className="text-[14px] font-medium text-foreground">No services configured yet</p>
           <p className="mt-1 text-[12.5px] text-muted-foreground">
-            Get started by adding your first pitch or sport modality.
+            Get started by adding your first sport.
           </p>
           <Button size="sm" onClick={openAddDialog} className="mt-4">
             <Plus className="size-4" /> Add Service
@@ -250,7 +250,7 @@ function ServicesPage() {
               <Input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="e.g. Football Turf C"
+                placeholder="e.g. Football"
                 autoFocus
               />
             </div>

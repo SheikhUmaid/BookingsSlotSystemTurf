@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import BuiltByZinth from "../shared/BuiltByZinth";
 
 export default function ProfileFooter({ onLogout }) {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -45,7 +46,9 @@ export default function ProfileFooter({ onLogout }) {
                 </button>
             )}
 
-            <div className="mt-5 flex flex-col items-center gap-1 text-center">
+            <BuiltByZinth className="mt-6 w-full" />
+
+            <div className="mt-4 flex flex-col items-center gap-1 text-center">
                 <div className="flex flex-wrap items-center justify-center gap-2 font-['Space_Grotesk'] text-[11px] font-semibold uppercase tracking-widest text-[#bccac0]">
                     <span>Zinth Labs Pvt Ltd</span>
                     <span className="h-1 w-1 rounded-full bg-[#87948b]" />

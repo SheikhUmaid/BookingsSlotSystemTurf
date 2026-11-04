@@ -1,6 +1,8 @@
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { getLicence } from "../services/licence.service.js";
+import { featureDeniedBody } from "../middlewares/licence.middleware.js";
 
 const adminLogin = async (req, res) => {
     try {
@@ -13,7 +15,7 @@ const adminLogin = async (req, res) => {
 
         const user = await User.findOne({
             $or: [{ phone: loginIdentifier }, { email: loginIdentifier.toLowerCase() }],
-            role: "admin",
+            role: { $in: ["admin", "staff"] },
         });
 
         if (!user) {
@@ -33,6 +35,14 @@ const adminLogin = async (req, res) => {
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
+        // Staff accounts are kept on downgrade but can only sign in while the plan includes them.
+        if (user.role === "staff") {
+            const { plan } = await getLicence();
+            if (plan?.features?.staffManagement !== true) {
+                return res.status(403).json(featureDeniedBody("staffManagement", plan));
+            }
+        }
+
         const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
             expiresIn: "180d",
         });
@@ -47,7 +57,7 @@ const adminLogin = async (req, res) => {
         });
 
         return res.status(200).json({
-            message: "Admin login successful",
+            message: user.role === "staff" ? "Staff login successful" : "Admin login successful",
             accessToken,
             user: {
                 id: user._id,

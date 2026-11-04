@@ -70,6 +70,7 @@ export const getDashboardOverview = async (req, res) => {
         })
             .populate("user", "name phone email")
             .populate("service", "name description icon")
+            .populate("pitch", "name size")
             .populate("time_slots", "start_time end_time category price")
             .lean();
 
@@ -110,6 +111,8 @@ export const getDashboardOverview = async (req, res) => {
                 phone: b.user?.phone || "",
                 serviceName: b.service?.name || "General Turf",
                 serviceId: b.service?._id || "",
+                pitchName: b.pitch?.name || "",
+                pitchId: b.pitch?._id || "",
                 timeSlots: b.time_slots || [],
                 startTime: b.time_slots?.[0]?.start_time || "",
                 endTime: b.time_slots?.[0]?.end_time || "",
@@ -124,6 +127,7 @@ export const getDashboardOverview = async (req, res) => {
             .limit(6)
             .populate("user", "name phone")
             .populate("service", "name")
+            .populate("pitch", "name")
             .populate("time_slots", "start_time end_time")
             .lean();
 
@@ -132,7 +136,8 @@ export const getDashboardOverview = async (req, res) => {
             _id: b._id,
             customer: b.user?.name || "Customer",
             phone: b.user?.phone || "",
-            pitch: b.service?.name || "General Turf",
+            pitch: b.pitch?.name || b.service?.name || "General Turf",
+            serviceName: b.service?.name || "",
             date: toDateStr(new Date(b.date)),
             amount: b.total_payable || 0,
             paid: b.amount_paid || 0,

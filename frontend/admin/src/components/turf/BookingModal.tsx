@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertTriangle, CalendarDays, Clock, Loader2 } from "lucide-react";
+import { AlertTriangle, CalendarDays, Clock, LandPlot, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useStore } from "@/lib/store";
-import { inr } from "@/lib/turf-data";
+import { fmtDate, inr } from "@/lib/turf-data";
 import { selectCls } from "./ui-bits";
 import { adminFetch } from "@/lib/api";
 import { useSubscription } from "@/lib/useSubscription";
+import { usePitches } from "@/lib/usePitches";
 
 interface ApiSlotItem {
   _id: string;
@@ -39,24 +40,26 @@ const to12 = (t?: string) => {
 export function BookingModal() {
   const { draft, closeBooking } = useStore();
   const queryClient = useQueryClient();
-  const { isInactive, status } = useSubscription();
+  const { isInactive, status, manualBookingLocked, bookingsDisabled } = useSubscription();
   const open = !!draft;
 
   const [date, setDate] = useState("");
   const [slotId, setSlotId] = useState("");
+  const [pitchId, setPitchId] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ name?: string; phone?: string; slot?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; phone?: string; slot?: string; pitch?: string }>({});
   const [conflict, setConflict] = useState<string | null>(null);
   const [prefilled, setPrefilled] = useState(false);
 
   // Sync draft state when opened
   useEffect(() => {
     if (draft) {
-      setDate(draft.date ?? new Date().toISOString().slice(0, 10));
+      setDate(draft.date ?? fmtDate(new Date()));
       setSlotId(draft.slotId ?? "");
-      setPrefilled(!!draft.slotId);
+      setPitchId(draft.pitchId ?? "");
+      setPrefilled(!!draft.slotId && !!draft.pitchId);
       setName("");
       setPhone("");
       setErrors({});
@@ -64,14 +67,24 @@ export function BookingModal() {
     }
   }, [draft]);
 
-  // Fetch availability for selected date (slots are global across the venue)
+  const { pitches, isLoading: pitchesLoading } = usePitches();
+  const pitch = pitches.find((p) => p._id === pitchId);
+
+  // Default to the first pitch when none was preselected
+  useEffect(() => {
+    const first = pitches[0];
+    if (open && !pitchId && first) setPitchId(first._id);
+  }, [open, pitchId, pitches]);
+
+  // Fetch availability for the selected date ON the selected pitch
+  // (a slot is unique per pitch per day, regardless of sport)
   const { data: availabilityData, isLoading: slotsLoading } = useQuery({
-    queryKey: ["admin-time-slots-availability", date],
+    queryKey: ["admin-time-slots-availability", date, pitchId],
     queryFn: () =>
       adminFetch<AvailabilityResponse>(
-        `/admin/time-slots/availability?date=${date}`
+        `/admin/time-slots/availability?date=${date}&pitch=${pitchId}`
       ),
-    enabled: open && !!date,
+    enabled: open && !!date && !!pitchId,
   });
 
   const slots = availabilityData?.slots ?? [];
@@ -93,12 +106,21 @@ export function BookingModal() {
       toast.error(`Account is ${status.toUpperCase()}. Write access is blocked until subscription is renewed.`);
       return;
     }
+    if (manualBookingLocked) {
+      toast.error(
+        bookingsDisabled
+          ? "Bookings are currently disabled for this venue."
+          : "Manual bookings are not included in your plan. Upgrade to unlock them.",
+      );
+      return;
+    }
     const errs: typeof errors = {};
     if (name.trim().length < 2) errs.name = "Enter the customer's name";
     const cleanPhone = phone.replace(/\D/g, "").slice(-10);
     if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
       errs.phone = "Enter a valid 10-digit mobile number";
     }
+    if (!pitchId) errs.pitch = "Choose a pitch";
     if (!slotId) errs.slot = "Choose a time slot";
     setErrors(errs);
     if (Object.keys(errs).length) return;
@@ -107,7 +129,7 @@ export function BookingModal() {
     setConflict(null);
 
     try {
-      // Book slot globally without requiring admin to select service
+      // Slot is booked on the chosen pitch; service defaults server-side
       const res = await adminFetch<{
         message: string;
         booking: { _id: string; booking_ref: string };
@@ -116,6 +138,7 @@ export function BookingModal() {
         body: JSON.stringify({
           customer_name: name.trim(),
           customer_phone: cleanPhone,
+          pitch: pitchId,
           date,
           time_slots: [slotId],
           status: "paid",
@@ -124,7 +147,7 @@ export function BookingModal() {
       });
 
       toast.success(`Booking ${res.booking.booking_ref} confirmed`, {
-        description: `${name.trim()} · ${to12(slot?.start_time)} on ${dateLabel}`,
+        description: `${name.trim()} · ${pitch?.name ?? "Pitch"} · ${to12(slot?.start_time)} on ${dateLabel}`,
       });
 
       // Invalidate query caches so Calendar & Bookings refresh immediately
@@ -163,6 +186,9 @@ export function BookingModal() {
               <div className="grid grid-cols-2 gap-y-2 text-[13px]">
                 <Row icon={CalendarDays} text={dateLabel} />
                 <Row icon={Clock} text={`${to12(slot.start_time)} – ${to12(slot.end_time)}`} />
+                <span className="col-span-2">
+                  <Row icon={LandPlot} text={pitch ? `${pitch.name} · ${pitch.size}` : "—"} />
+                </span>
                 <span className="col-span-2 text-[12px] text-muted-foreground">{slot.category}</span>
               </div>
               <button
@@ -176,10 +202,36 @@ export function BookingModal() {
           ) : (
             <div className="space-y-3">
               <div className="space-y-1.5">
+                <Label className="text-[12.5px]">Pitch</Label>
+                <select
+                  value={pitchId}
+                  onChange={(e) => {
+                    setPitchId(e.target.value);
+                    setSlotId("");
+                  }}
+                  className={selectCls + " h-9 w-full"}
+                  aria-invalid={!!errors.pitch}
+                  disabled={pitchesLoading}
+                >
+                  {pitchesLoading ? (
+                    <option value="">Loading pitches…</option>
+                  ) : pitches.length === 0 ? (
+                    <option value="">No pitches configured — add one under Pitches</option>
+                  ) : (
+                    pitches.map((p) => (
+                      <option key={p._id} value={p._id}>
+                        {p.name} · {p.size}
+                      </option>
+                    ))
+                  )}
+                </select>
+                {errors.pitch && <p className="text-[12px] text-destructive">{errors.pitch}</p>}
+              </div>
+              <div className="space-y-1.5">
                 <Label className="text-[12.5px]">Date</Label>
                 <Input
                   type="date"
-                  min={new Date().toISOString().slice(0, 10)}
+                  min={fmtDate(new Date())}
                   value={date}
                   onChange={(e) => {
                     setDate(e.target.value);
@@ -263,7 +315,7 @@ export function BookingModal() {
             <Button type="button" variant="outline" onClick={closeBooking} disabled={submitting}>
               Cancel
             </Button>
-            <Button type="submit" disabled={submitting || isInactive}>
+            <Button type="submit" disabled={submitting || manualBookingLocked}>
               {submitting ? (
                 <>
                   <Loader2 className="mr-1.5 size-4 animate-spin" />
@@ -271,6 +323,8 @@ export function BookingModal() {
                 </>
               ) : isInactive ? (
                 "Locked (Account Inactive)"
+              ) : manualBookingLocked ? (
+                bookingsDisabled ? "Bookings Disabled" : "Locked (Upgrade Plan)"
               ) : (
                 "Confirm Booking"
               )}

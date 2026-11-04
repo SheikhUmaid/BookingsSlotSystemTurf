@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { sendOtp, verifyOTP } from "../../services/api.service";
+import { useVenue } from "../../hooks/useVenue";
 export default function LoginModal({
     isOpen,
     onClose,
     onSuccess,
 }) {
+    const { venueName } = useVenue();
     const [phone, setPhone] = useState("");
     const [otp, setOtp] = useState("");
     const [step, setStep] = useState("phone");
@@ -179,7 +181,7 @@ export default function LoginModal({
 
                         <div>
                             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-400">
-                                Strikers Yard
+                                {venueName}
                             </p>
                             <p className="mt-0.5 text-xs text-on-surface-variant">
                                 Secure sign in

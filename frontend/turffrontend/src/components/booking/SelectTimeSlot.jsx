@@ -3,21 +3,21 @@ import { useTimeSlots } from "../../hooks/useTimeSlots";
 
 const MAX_SELECTED_SLOTS = 4;
 
-export default function TimeSlotSelection({ date, onSlotChange }) {
+export default function TimeSlotSelection({ date, pitch, onSlotChange }) {
     const [selectedSlot, setSelectedSlot] = useState([]);
 
-    const { timeSlots, loading, error } = useTimeSlots(date);
+    const { timeSlots, loading, error } = useTimeSlots(date, pitch);
 
     const sessions = timeSlots;
 
-    // Clear the selection when the selected date changes.
+    // Clear the selection when the selected date or pitch changes.
     useEffect(() => {
         setSelectedSlot([]);
         onSlotChange?.({
             time_slots: [],
             price: 0,
         });
-    }, [date]);
+    }, [date, pitch]);
 
     const handleSlotSelect = (slot) => {
         if (slot.booked) return;
@@ -61,6 +61,14 @@ export default function TimeSlotSelection({ date, onSlotChange }) {
         });
 
     };
+
+    if (!pitch) {
+        return (
+            <div className="p-4 text-sm text-on-surface-variant">
+                Select a pitch to see available time slots.
+            </div>
+        );
+    }
 
     if (loading) {
         return (

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Loader2, Lock, Save } from "lucide-react";
+import { Clock, Loader2, Lock, LocateFixed, MapPin, Navigation, Phone, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -23,13 +23,40 @@ interface BusinessSettings {
   email: string;
   city: string;
   address: string;
+  tagline: string;
+  landmark: string;
+  pincode: string;
+  opening_hours: string;
+  maps_url: string;
+  latitude: string;
+  longitude: string;
   allow_partial_payments: boolean;
   sms_confirmation: boolean;
   daily_summary_email: boolean;
 }
 
+type SettingsFromApi = Omit<BusinessSettings, "latitude" | "longitude"> & {
+  latitude: number | null;
+  longitude: number | null;
+};
+
 interface SettingsResponse {
-  settings: BusinessSettings;
+  settings: SettingsFromApi;
+}
+
+// Mirrors backend/utils/venue.js so the preview matches what customers see.
+function venueLinks(f: BusinessSettings) {
+  const hasCoords = f.latitude.trim() !== "" && f.longitude.trim() !== "";
+  const cityLine = [f.city, f.pincode].filter(Boolean).join(" ");
+  const fullAddress = [f.address, f.landmark && `Near ${f.landmark}`, cityLine].filter(Boolean).join(", ");
+  const coords = `${f.latitude.trim()},${f.longitude.trim()}`;
+  const directions = hasCoords
+    ? `https://www.google.com/maps/dir/?api=1&destination=${coords}`
+    : f.maps_url.trim() ||
+      (fullAddress ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fullAddress)}` : "");
+  const query = hasCoords ? coords : fullAddress;
+  const embed = query ? `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=15&output=embed` : "";
+  return { fullAddress, directions, embed };
 }
 
 const defaultSettings: BusinessSettings = {
@@ -38,6 +65,13 @@ const defaultSettings: BusinessSettings = {
   email: "hello@greenarena.in",
   city: "Bengaluru",
   address: "Plot 21, Sports Complex Road",
+  tagline: "",
+  landmark: "",
+  pincode: "",
+  opening_hours: "06:00 – Midnight",
+  maps_url: "",
+  latitude: "",
+  longitude: "",
   allow_partial_payments: true,
   sms_confirmation: true,
   daily_summary_email: false,
@@ -75,6 +109,13 @@ function SettingsPage() {
         email: data.settings.email || defaultSettings.email,
         city: data.settings.city || defaultSettings.city,
         address: data.settings.address || defaultSettings.address,
+        tagline: data.settings.tagline ?? "",
+        landmark: data.settings.landmark ?? "",
+        pincode: data.settings.pincode ?? "",
+        opening_hours: data.settings.opening_hours ?? "",
+        maps_url: data.settings.maps_url ?? "",
+        latitude: data.settings.latitude != null ? String(data.settings.latitude) : "",
+        longitude: data.settings.longitude != null ? String(data.settings.longitude) : "",
         allow_partial_payments: data.settings.allow_partial_payments ?? true,
         sms_confirmation: data.settings.sms_confirmation ?? true,
         daily_summary_email: data.settings.daily_summary_email ?? false,
@@ -87,10 +128,14 @@ function SettingsPage() {
       toast.error("Business name is required");
       return;
     }
+    if ((form.latitude.trim() === "") !== (form.longitude.trim() === "")) {
+      toast.error("Enter both latitude and longitude, or leave both empty");
+      return;
+    }
 
     setSavingSettings(true);
     try {
-      await adminFetch<{ message: string; settings: BusinessSettings }>("/admin/settings", {
+      await adminFetch<{ message: string; settings: SettingsFromApi }>("/admin/settings", {
         method: "PUT",
         body: JSON.stringify(form),
       });
@@ -103,6 +148,33 @@ function SettingsPage() {
       setSavingSettings(false);
     }
   };
+
+  const [locating, setLocating] = useState(false);
+  const captureLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Location is not supported in this browser");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setForm((f) => ({
+          ...f,
+          latitude: coords.latitude.toFixed(6),
+          longitude: coords.longitude.toFixed(6),
+        }));
+        setLocating(false);
+        toast.success("Location captured — remember to save");
+      },
+      () => {
+        setLocating(false);
+        toast.error("Couldn't get your location. Allow location access and try again.");
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
+
+  const links = venueLinks(form);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,8 +214,10 @@ function SettingsPage() {
   };
 
   return (
-    <div className="max-w-3xl space-y-5">
+    <div>
       <PageHeader title="Settings" desc="Manage business information, operational preferences, and account security." />
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="min-w-0 space-y-5">
 
       {/* Business Information Panel */}
       <Panel>
@@ -156,6 +230,17 @@ function SettingsPage() {
               onChange={(e) => setForm({ ...form, business_name: e.target.value })}
               className="h-9"
               placeholder="e.g. Green Arena Turf"
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[12.5px]">Tagline</Label>
+            <Input
+              value={form.tagline}
+              onChange={(e) => setForm({ ...form, tagline: e.target.value })}
+              className="h-9"
+              placeholder="e.g. Downtown Arena Pitch"
+              maxLength={80}
               disabled={isLoading}
             />
           </div>
@@ -200,6 +285,97 @@ function SettingsPage() {
               disabled={isLoading}
             />
           </div>
+        </div>
+      </Panel>
+
+      {/* Location Panel */}
+      <Panel>
+        <PanelHead
+          title="Location & directions"
+          right={
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={captureLocation}
+              disabled={locating || isLoading}
+            >
+              {locating ? (
+                <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+              ) : (
+                <LocateFixed className="mr-1.5 size-3.5" />
+              )}
+              Use my current location
+            </Button>
+          }
+        />
+        <div className="grid gap-4 p-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label className="text-[12.5px]">Landmark</Label>
+            <Input
+              value={form.landmark}
+              onChange={(e) => setForm({ ...form, landmark: e.target.value })}
+              className="h-9"
+              placeholder="e.g. Opposite City Mall"
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[12.5px]">Pincode</Label>
+            <Input
+              value={form.pincode}
+              onChange={(e) => setForm({ ...form, pincode: e.target.value })}
+              className="h-9"
+              placeholder="e.g. 560001"
+              inputMode="numeric"
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label className="text-[12.5px]">Opening hours</Label>
+            <Input
+              value={form.opening_hours}
+              onChange={(e) => setForm({ ...form, opening_hours: e.target.value })}
+              className="h-9"
+              placeholder="e.g. 06:00 – Midnight"
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label className="text-[12.5px]">Google Maps link</Label>
+            <Input
+              value={form.maps_url}
+              onChange={(e) => setForm({ ...form, maps_url: e.target.value })}
+              className="h-9"
+              placeholder="https://maps.app.goo.gl/…"
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[12.5px]">Latitude</Label>
+            <Input
+              value={form.latitude}
+              onChange={(e) => setForm({ ...form, latitude: e.target.value })}
+              className="h-9"
+              placeholder="e.g. 12.971599"
+              inputMode="decimal"
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[12.5px]">Longitude</Label>
+            <Input
+              value={form.longitude}
+              onChange={(e) => setForm({ ...form, longitude: e.target.value })}
+              className="h-9"
+              placeholder="e.g. 77.594566"
+              inputMode="decimal"
+              disabled={isLoading}
+            />
+          </div>
+          <p className="text-[12px] text-muted-foreground sm:col-span-2">
+            Customers get directions to the exact coordinates if set. Otherwise they go to the Maps link, then the address.
+          </p>
         </div>
       </Panel>
 
@@ -334,9 +510,72 @@ function SettingsPage() {
           </div>
         </form>
       </Panel>
+      </div>
+
+      {/* Booking app preview */}
+      <Panel className="overflow-hidden xl:sticky xl:top-4">
+        <PanelHead
+          title="Booking app preview"
+          right={<span className="text-[11.5px] text-muted-foreground">What customers see</span>}
+        />
+        {links.embed ? (
+          <iframe
+            title="Turf location map"
+            src={links.embed}
+            className="h-48 w-full border-0 bg-muted"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        ) : (
+          <div className="grid h-48 place-items-center bg-muted text-[12.5px] text-muted-foreground">
+            Add an address to show the map
+          </div>
+        )}
+        <div className="space-y-3 p-4">
+          <div>
+            <div className="text-[16px] font-semibold leading-tight">{form.business_name || "Your turf"}</div>
+            {form.tagline && <div className="text-[12.5px] text-muted-foreground">{form.tagline}</div>}
+          </div>
+          <div className="space-y-2 text-[12.5px]">
+            {links.fullAddress && (
+              <div className="flex gap-2">
+                <MapPin className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                <span>{links.fullAddress}</span>
+              </div>
+            )}
+            {form.opening_hours && (
+              <div className="flex gap-2">
+                <Clock className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                <span>{form.opening_hours}</span>
+              </div>
+            )}
+            {form.contact_phone && (
+              <div className="flex gap-2">
+                <Phone className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                <span>{form.contact_phone}</span>
+              </div>
+            )}
+          </div>
+          {links.directions ? (
+            <Button asChild className="w-full">
+              <a href={links.directions} target="_blank" rel="noreferrer">
+                <Navigation className="mr-1.5 size-4" /> Get directions
+              </a>
+            </Button>
+          ) : (
+            <Button className="w-full" disabled>
+              <Navigation className="mr-1.5 size-4" /> Get directions
+            </Button>
+          )}
+          <p className="text-[11.5px] text-muted-foreground">
+            Changes show in the booking app after you save.
+          </p>
+        </div>
+      </Panel>
+      </div>
 
       {/* ─────────────────── TURFOS & ZINTH LABS PLATFORM INFO ─────────────────── */}
-      <Panel className="border border-border/80 bg-gradient-to-r from-card via-card to-primary-soft/10 p-5">
+      <Panel className="mt-5 border border-border/80 bg-gradient-to-r from-card via-card to-primary-soft/10 p-5">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">

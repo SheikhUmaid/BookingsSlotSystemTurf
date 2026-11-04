@@ -27,7 +27,9 @@ export const getSettings = async (req, res) => {
 // ---------------------------------------------------------------------------
 /**
  * Update business information and preferences.
- * Body: { business_name, contact_phone, email, city, address, allow_partial_payments, sms_confirmation, daily_summary_email }
+ * Body: { business_name, contact_phone, email, city, address, tagline, landmark, pincode,
+ *         opening_hours, maps_url, latitude, longitude, allow_partial_payments,
+ *         sms_confirmation, daily_summary_email }
  */
 export const updateSettings = async (req, res) => {
     try {
@@ -40,7 +42,30 @@ export const updateSettings = async (req, res) => {
             allow_partial_payments,
             sms_confirmation,
             daily_summary_email,
+            tagline,
+            landmark,
+            pincode,
+            opening_hours,
+            maps_url,
+            latitude,
+            longitude,
         } = req.body;
+
+        // Coordinates: both or neither, within valid ranges.
+        const toCoord = (v) => (v === "" || v === null ? null : Number(v));
+        const lat = latitude !== undefined ? toCoord(latitude) : undefined;
+        const lng = longitude !== undefined ? toCoord(longitude) : undefined;
+        if (lat !== undefined && lat !== null && !(lat >= -90 && lat <= 90)) {
+            return res.status(400).json({ message: "Latitude must be between -90 and 90." });
+        }
+        if (lng !== undefined && lng !== null && !(lng >= -180 && lng <= 180)) {
+            return res.status(400).json({ message: "Longitude must be between -180 and 180." });
+        }
+
+        const mapsLink = maps_url !== undefined ? String(maps_url).trim() : undefined;
+        if (mapsLink && !/^https:\/\//i.test(mapsLink)) {
+            return res.status(400).json({ message: "Google Maps link must start with https://" });
+        }
 
         let settings = await Setting.findOne();
         if (!settings) {
@@ -55,6 +80,16 @@ export const updateSettings = async (req, res) => {
         if (allow_partial_payments !== undefined) settings.allow_partial_payments = Boolean(allow_partial_payments);
         if (sms_confirmation !== undefined) settings.sms_confirmation = Boolean(sms_confirmation);
         if (daily_summary_email !== undefined) settings.daily_summary_email = Boolean(daily_summary_email);
+        if (tagline !== undefined) settings.tagline = String(tagline).trim();
+        if (landmark !== undefined) settings.landmark = String(landmark).trim();
+        if (pincode !== undefined) settings.pincode = String(pincode).trim();
+        if (opening_hours !== undefined) settings.opening_hours = String(opening_hours).trim();
+        if (mapsLink !== undefined) settings.maps_url = mapsLink;
+        if (lat !== undefined) settings.latitude = lat;
+        if (lng !== undefined) settings.longitude = lng;
+        if ((settings.latitude == null) !== (settings.longitude == null)) {
+            return res.status(400).json({ message: "Enter both latitude and longitude, or leave both empty." });
+        }
 
         await settings.save();
 

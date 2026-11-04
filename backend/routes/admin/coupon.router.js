@@ -1,4 +1,5 @@
 import express from "express";
+import { requireFeature } from "../../middlewares/licence.middleware.js";
 import {
     getAllCoupons,
     getCouponById,
@@ -9,6 +10,9 @@ import {
 } from "../../controllers/admin/coupon.controller.js";
 
 const router = express.Router();
+
+// Every coupon route requires the plan's "coupons" feature.
+router.use(requireFeature("coupons"));
 
 // GET /api/admin/coupons
 router.get("/", getAllCoupons);

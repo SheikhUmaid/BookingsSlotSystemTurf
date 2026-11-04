@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { generateBookings, fmtDate, isSlotTaken, services, timeSlots, type Booking } from "./turf-data";
 
-export type BookingDraft = { date?: string; serviceId?: string; slotId?: string };
+export type BookingDraft = { date?: string; serviceId?: string; slotId?: string; pitchId?: string };
 
 type Ctx = {
   today: Date;

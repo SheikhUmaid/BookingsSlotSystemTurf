@@ -1,78 +1,56 @@
-import Setting from "../../models/setting.model.js";
+import Pitch from "../../models/pitch.model.js";
+import User from "../../models/user.model.js";
+import { refreshLicence, limitFromPlan, callRegistry } from "../../services/licence.service.js";
+import { effectivePermissions } from "../../utils/permissions.js";
+
+const usageEntry = (plan, key, used) => {
+    const max = limitFromPlan(plan, key);
+    return { used, max: Number.isFinite(max) ? max : null, atLimit: used >= max, overLimit: used > max };
+};
 
 /**
  * GET /api/admin/subscription/status
- * Fetches current subscription/deployment status from the central registry
- * at localhost:5001/api/registry/status with the configured bearer token.
- * Falls back gracefully to local cached Setting or mock status if the registry service is offline.
+ * Refreshes the licence from the central registry (falls back to the cached
+ * licence if the registry is unreachable) and returns status, plan, usage
+ * against plan limits and the caller's effective permissions.
  */
 export const getSubscriptionStatus = async (req, res) => {
     try {
-        const registryUrl = process.env.REGISTRY_API_URL || "http://localhost:5001/api/registry/status";
-        const registryToken = process.env.REGISTRY_BEARER_TOKEN || "zln_live_95ec7bb6740ae02c447a00a29fbcb281b794d65835b88d4c3e27301782975484";
+        const licence = await refreshLicence();
+        const { plan } = licence;
 
-        let registryData = null;
+        const [pitchCount, staffCount, adminCount] = await Promise.all([
+            Pitch.countDocuments(),
+            User.countDocuments({ role: "staff" }),
+            User.countDocuments({ role: "admin" }),
+        ]);
 
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-            const registryResponse = await fetch(registryUrl, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${registryToken}`,
-                },
-                signal: controller.signal,
-            });
-
-            clearTimeout(timeoutId);
-
-            if (registryResponse.ok) {
-                registryData = await registryResponse.json();
-            } else {
-                console.warn(`[Registry] Service returned status ${registryResponse.status}`);
-            }
-        } catch (fetchErr) {
-            console.warn("[Registry] Unable to reach central registry at", registryUrl, fetchErr.message);
-        }
-
-        // Get local settings document
-        let setting = await Setting.findOne();
-        if (!setting) {
-            setting = new Setting();
-        }
-
-        // If registry gave a response, update our local cache
-        if (registryData && registryData.success) {
-            setting.deploymentId = registryData.deploymentId || setting.deploymentId || "DEP-0001";
-            setting.deploymentStatus = ["active", "inactive", "suspended"].includes(registryData.status)
-                ? registryData.status
-                : "active";
-            setting.bookingEnabled = typeof registryData.bookingEnabled === "boolean" ? registryData.bookingEnabled : true;
-            if (registryData.expiresAt) {
-                setting.subscriptionExpiresAt = new Date(registryData.expiresAt);
-            }
-            await setting.save();
-        }
-
-        const expiresAt = setting.subscriptionExpiresAt ? new Date(setting.subscriptionExpiresAt) : new Date("2026-11-29T00:00:00.000Z");
-        const now = new Date();
-        const diffMs = expiresAt.getTime() - now.getTime();
-        const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-        const hoursLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60)));
+        const expiresAt = licence.expiresAt ?? new Date();
+        const diffMs = expiresAt.getTime() - Date.now();
 
         return res.status(200).json({
             success: true,
-            deploymentId: setting.deploymentId || "DEP-0001",
-            status: setting.deploymentStatus || "active",
-            deploymentStatus: setting.deploymentStatus || "active",
-            bookingEnabled: setting.bookingEnabled ?? true,
+            deploymentId: licence.deploymentId,
+            status: licence.status,
+            deploymentStatus: licence.status,
+            bookingEnabled: licence.bookingEnabled,
             expiresAt: expiresAt.toISOString(),
-            daysLeft,
-            hoursLeft,
+            daysLeft: Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24))),
+            hoursLeft: Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60))),
             isExpired: diffMs <= 0,
-            registryReachable: Boolean(registryData && registryData.success),
+            registryReachable: licence.registryReachable,
+            syncedAt: licence.syncedAt,
+            plan,
+            usage: {
+                maxPitches: usageEntry(plan, "maxPitches", pitchCount),
+                maxStaff: usageEntry(plan, "maxStaff", staffCount),
+                maxAdmins: usageEntry(plan, "maxAdmins", adminCount),
+            },
+            me: {
+                id: req.user._id,
+                role: req.user.role,
+                permissions: effectivePermissions(req.user, plan),
+            },
         });
     } catch (error) {
         console.error("Admin getSubscriptionStatus error:", error);
@@ -111,3 +89,49 @@ export const renewSubscription = async (req, res) => {
     }
 };
 
+
+/**
+ * GET /api/admin/subscription/plans
+ * Plan options, Zinth Labs' UPI details and this venue's latest plan request,
+ * straight from the registry.
+ */
+export const getPlanOptions = async (req, res) => {
+    const { ok, status, data } = await callRegistry("/plans");
+    if (!ok) {
+        return res.status(status >= 500 ? 503 : status).json({
+            success: false,
+            message: data?.message || "Couldn't load plans from Zinth Labs.",
+        });
+    }
+    return res.status(200).json(data);
+};
+
+/**
+ * POST /api/admin/subscription/plan-request
+ * Body: { planCode, paymentReference, note }
+ * Tells Zinth Labs the venue has paid and wants this plan.
+ */
+export const requestPlanChange = async (req, res) => {
+    const { planCode, paymentReference = "", note = "" } = req.body;
+
+    if (!planCode || typeof planCode !== "string") {
+        return res.status(400).json({ success: false, message: "Choose a plan first." });
+    }
+
+    const requestedBy = [req.user?.name, req.user?.phone || req.user?.email].filter(Boolean).join(", ");
+    const fullNote = [note && String(note).trim(), requestedBy && `Sent by ${requestedBy}`]
+        .filter(Boolean)
+        .join(" — ");
+
+    const { ok, status, data } = await callRegistry("/plan-requests", {
+        method: "POST",
+        body: { planCode, paymentReference: String(paymentReference).trim(), note: fullNote },
+    });
+    if (!ok) {
+        return res.status(status >= 500 ? 503 : status).json({
+            success: false,
+            message: data?.message || "Couldn't notify Zinth Labs. Please try again.",
+        });
+    }
+    return res.status(201).json(data);
+};

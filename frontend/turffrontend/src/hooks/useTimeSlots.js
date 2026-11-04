@@ -85,13 +85,14 @@ const normalizeTimeSlots = (allSlots, availableSlots) => {
     );
 };
 
-export const useTimeSlots = (date) => {
+export const useTimeSlots = (date, pitch) => {
     const [timeSlots, setTimeSlots] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (!date) return;
+        // Availability is per pitch; nothing to fetch until one is chosen
+        if (!date || !pitch) return;
 
         const controller = new AbortController();
 
@@ -103,7 +104,7 @@ export const useTimeSlots = (date) => {
                 const [allResponse, availableResponse] =
                     await Promise.all([
                         fetchAllTimeSlots(),
-                        fetchAvailableTimeSlots(date, {
+                        fetchAvailableTimeSlots(date, pitch, {
                             signal: controller.signal,
                         }),
                     ]);
@@ -135,7 +136,7 @@ export const useTimeSlots = (date) => {
         loadTimeSlots();
 
         return () => controller.abort();
-    }, [date]);
+    }, [date, pitch]);
 
     return { timeSlots, loading, error };
 };

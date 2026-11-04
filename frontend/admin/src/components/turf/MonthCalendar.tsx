@@ -69,12 +69,12 @@ export function MonthCalendar({
               type="button"
               onClick={() => onSelect(ds)}
               className={cn(
-                "relative flex h-10 flex-col items-center justify-center rounded-lg border border-transparent text-[13px] font-medium transition-all",
+                "relative flex h-9 flex-col sm:h-10 items-center justify-center rounded-lg border border-transparent text-[13px] font-medium transition-all",
                 st === "past"
                   ? "text-muted-foreground/50 hover:bg-muted/50"
                   : "text-foreground hover:bg-accent/60",
-                isToday && !isSel && "border-blue-500 font-semibold text-blue-600",
-                isSel && "border-blue-600 bg-blue-600 font-semibold text-white shadow-sm hover:bg-blue-600"
+                isToday && !isSel && "border-primary font-semibold text-primary",
+                isSel && "border-primary bg-primary font-semibold text-primary-foreground shadow-sm hover:bg-primary"
               )}
             >
               <span>{d.getDate()}</span>
@@ -107,7 +107,7 @@ export function MonthCalendar({
           <span className="size-2 rounded-full bg-red-500" /> Fully booked
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="size-3 rounded border border-blue-500" /> Today
+          <span className="size-3 rounded border border-primary" /> Today
         </span>
       </div>
     </div>

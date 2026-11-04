@@ -1,10 +1,12 @@
 import express from "express";
+import { requireBookingEnabled, requireFeature } from "../../middlewares/licence.middleware.js";
 import {
     getAllBookings,
     getBookingById,
     updateBookingStatus,
     getBookingStats,
     createAdminBooking,
+    deleteBooking,
 } from "../../controllers/admin/bookings.controller.js";
 
 const router = express.Router();
@@ -16,13 +18,16 @@ router.get("/stats", getBookingStats);
 router.get("/", getAllBookings);
 
 // POST /api/admin/bookings         — create manual booking
-router.post("/", createAdminBooking);
+router.post("/", requireBookingEnabled, requireFeature("manualBookings"), createAdminBooking);
 
 // GET  /api/admin/bookings/:bookingId
 router.get("/:bookingId", getBookingById);
 
 // PATCH /api/admin/bookings/:bookingId/status
 router.patch("/:bookingId/status", updateBookingStatus);
+
+// DELETE /api/admin/bookings/:bookingId
+router.delete("/:bookingId", deleteBooking);
 
 export default router;
 

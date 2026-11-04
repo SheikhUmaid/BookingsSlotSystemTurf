@@ -17,8 +17,14 @@ const userSchema = mongoose.Schema({
     },
     role:{
         type:String,
-        enum:["user","admin"],
+        enum:["user","admin","staff"],
         default:"user"
+    },
+    // Staff only: admin-panel areas this staff member may access
+    // (see utils/permissions.js). Only honoured when the plan enables roleBasedAccess.
+    permissions:{
+        type:[String],
+        default: undefined
     },
     password:{
         type:String,

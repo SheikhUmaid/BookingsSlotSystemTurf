@@ -25,7 +25,7 @@ function HistoryBookingCard({ booking }) {
                     </div>
 
                     <span className="text-xs leading-relaxed text-on-surface-variant">
-                        {booking.time_slots[0].start_time} • {booking.service.description}
+                        {booking.time_slots[0].start_time} • {booking.pitch?.name ?? booking.service.description}
                     </span>
                 </div>
             </div>

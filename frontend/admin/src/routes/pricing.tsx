@@ -230,7 +230,8 @@ function PricingPage() {
                   )}
                 </span>
               </div>
-              <table className="w-full">
+              <div className="overflow-x-auto">
+              <table className="w-full whitespace-nowrap">
                 <thead>
                   <tr>
                     <Th>Start</Th>
@@ -289,6 +290,7 @@ function PricingPage() {
                   )}
                 </tbody>
               </table>
+              </div>
             </Panel>
           );
         })}

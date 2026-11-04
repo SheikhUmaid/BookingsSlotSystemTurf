@@ -2,9 +2,11 @@
 import { useState } from "react";
 import TicketQRModal from "./TicketQRModal";
 import { dateFormatter } from "../../services/date.service";
+import { useVenue } from "../../hooks/useVenue";
 
 export default function UpcomingBooking({booking}) {
     const [showQR, setShowQR] = useState(false);
+    const { venue, venueName } = useVenue();
 
     if (!booking) {
         return null;
@@ -12,12 +14,12 @@ export default function UpcomingBooking({booking}) {
 
 
     const shareBooking = async () => {
-        const message = `${booking.sport} confirmed at ${booking.pitch}. ${booking.date}, ${booking.time}. Ref: ${booking.reference}`;
+        const message = `${booking.service?.name} confirmed at ${booking.pitch?.name ?? "the turf"}. ${dateFormatter(booking.date)}, ${booking.time_slots?.[0]?.start_time ?? ""}. Ref: ${booking._id}`;
 
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: "Strikers Yard Squad Pass",
+                    title: `${venueName} Booking`,
                     text: message,
                     url: window.location.href,
                 });
@@ -40,9 +42,11 @@ export default function UpcomingBooking({booking}) {
     };
 
     const openDirections = () => {
-        const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-            booking.location
-        )}`;
+        const url =
+            venue?.directions_url ||
+            `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                venue?.full_address || venueName
+            )}`;
 
         window.open(url, "_blank", "noopener,noreferrer");
     };
@@ -110,7 +114,11 @@ export default function UpcomingBooking({booking}) {
                                     <span className="material-symbols-outlined text-base text-primary">
                                         stadium
                                     </span>
-                                    <span>{booking.service.description}</span>
+                                    <span>
+                                        {booking.pitch
+                                            ? `${booking.pitch.name} • ${booking.pitch.size}`
+                                            : booking.service.description}
+                                    </span>
                                 </div>
                             </div>
 

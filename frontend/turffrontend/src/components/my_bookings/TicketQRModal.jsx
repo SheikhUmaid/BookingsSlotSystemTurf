@@ -73,7 +73,9 @@ export default function TicketQRModal({ onClose, booking }) {
                     </h2>
 
                     <span className="text-xs font-semibold uppercase tracking-wide text-primary">
-                        {booking.service.description}
+                        {booking.pitch
+                            ? `${booking.service.name} • ${booking.pitch.name}`
+                            : booking.service.description}
                     </span>
 
                     <span className="text-sm text-on-surface-variant">

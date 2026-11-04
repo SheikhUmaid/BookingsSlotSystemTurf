@@ -1,5 +1,6 @@
 import { useState } from "react";
 import LoginModal from "./LoginModal";
+import { useVenue } from "../../hooks/useVenue";
 
 export default function ShowLoginButton({
     title = "Authentication",
@@ -14,6 +15,7 @@ export default function ShowLoginButton({
     isOpen: controlledIsOpen,
     onClose: controlledOnClose,
 }) {
+    const { venueName } = useVenue();
     const [internalIsOpen, setInternalIsOpen] = useState(false);
     const isModalOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
@@ -86,7 +88,7 @@ export default function ShowLoginButton({
                         </div>
 
                         <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-0.5 font-['Space_Grotesk'] text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
-                            Strikers Yard
+                            {venueName}
                         </span>
                     </div>
 

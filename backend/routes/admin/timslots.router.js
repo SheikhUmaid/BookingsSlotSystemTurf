@@ -1,4 +1,5 @@
 import express from "express";
+import { requireFeature } from "../../middlewares/licence.middleware.js";
 import {
     getTimeSlotsAvailability,
     getMonthAvailability,
@@ -15,7 +16,7 @@ const router = express.Router();
 router.get("/availability", getTimeSlotsAvailability);
 
 // GET /api/admin/time-slots/month-availability?month=YYYY-MM
-router.get("/month-availability", getMonthAvailability);
+router.get("/month-availability", requireFeature("calendarManagement"), getMonthAvailability);
 
 // GET /api/admin/time-slots
 router.get("/", getAllAdminTimeSlots);

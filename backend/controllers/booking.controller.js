@@ -2,13 +2,17 @@ import Booking from "../models/booking.model.js";
 import Service from "../models/service.model.js";
 import TimeSlot from "../models/time_slot.model.js";
 import Coupon from "../models/coupon.model.js";
+import Pitch from "../models/pitch.model.js";
+import { pitchOccupancyFilter } from "../utils/pitch_conflict.js";
 import mongoose from "mongoose";
+import { hasFeature, getLicence } from "../services/licence.service.js";
+import { featureDeniedBody } from "../middlewares/licence.middleware.js";
 
 
 export const createBooking = async (req, res) => {
     try {
         // 1. Extract booking details from the request body
-        const { time_slots, date, service, coupon_code } = req.body;
+        const { time_slots, date, service, pitch, coupon_code } = req.body;
         const user = req.user.id;
 
         // 2. Validate that at least one time slot is selected
@@ -28,12 +32,13 @@ export const createBooking = async (req, res) => {
         // 4. Validate MongoDB ObjectId formats
         if (
             !mongoose.Types.ObjectId.isValid(service) ||
+            !mongoose.Types.ObjectId.isValid(pitch) ||
             !time_slots.every(id =>
                 mongoose.Types.ObjectId.isValid(id)
             )
         ) {
             return res.status(400).json({
-                message: "Invalid service or time slot ID."
+                message: "Invalid service, pitch or time slot ID."
             });
         }
 
@@ -70,6 +75,15 @@ export const createBooking = async (req, res) => {
             });
         }
 
+        // 6b. Find the selected pitch
+        const pitchExists = await Pitch.exists({ _id: pitch });
+
+        if (!pitchExists) {
+            return res.status(404).json({
+                message: "Pitch not found."
+            });
+        }
+
         // 7. Verify that all selected time slots actually exist
         const timeSlotCount = await TimeSlot.countDocuments({
             _id: { $in: time_slots }
@@ -88,20 +102,22 @@ export const createBooking = async (req, res) => {
         endDate.setUTCDate(endDate.getUTCDate() + 1);
 
         // 9. Check whether any requested slot is already booked
-        // on the selected date.
+        // on the selected date FOR THIS PITCH. Services/sports don't
+        // matter: a pitch slot is unique per day regardless of sport.
         const existingBooking = await Booking.findOne({
             date: {
                 $gte: startDate,
                 $lt: endDate
             },
             time_slots: { $in: time_slots },
-            status: { $ne: "cancelled" }
+            status: { $ne: "cancelled" },
+            ...pitchOccupancyFilter(pitch)
         });
 
         if (existingBooking) {
             return res.status(409).json({
                 message:
-                    "One or more selected time slots are already booked for this date."
+                    "One or more selected time slots are already booked on this pitch for this date."
             });
         }
 
@@ -118,6 +134,9 @@ export const createBooking = async (req, res) => {
         );
 
         if (coupon_code) {
+            if (!(await hasFeature("coupons"))) {
+                return res.status(403).json(featureDeniedBody("coupons", (await getLicence()).plan));
+            }
             if (typeof coupon_code !== "string") {
                 return res.status(400).json({
                     message: "Invalid coupon code."
@@ -172,6 +191,7 @@ export const createBooking = async (req, res) => {
         const newBooking = new Booking({
             user,
             service,
+            pitch,
             time_slots,
             date: startDate,
             total_payable: totalPayable,
@@ -205,7 +225,7 @@ export const getMyBookings = async (req, res) => {
         console.log(user)
         const myBookings = await Booking.find({ user ,
              status: { $in: ["pending", "partial", "paid"] },
-        }).populate('time_slots service').select(`
+        }).populate('time_slots service pitch').select(`
                 -user -total_payable -expires_at -payment_order_amount -createdAt -updatedAt -__v -payment_order_id
             `);
 

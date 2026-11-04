@@ -10,6 +10,22 @@ export function getToken(): string {
   }
 }
 
+/** Error thrown by adminFetch. `code` is the backend's machine-readable code, e.g. "PLAN_LIMIT_REACHED". */
+export class ApiError extends Error {
+  status: number;
+  code: string | undefined;
+  body: unknown;
+  constructor(status: number, message: string, code?: string, body?: unknown) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+    this.body = body;
+  }
+}
+
+export const API_BASE = BASE;
+
 export async function adminFetch<T = unknown>(
   path: string,
   init?: RequestInit,
@@ -24,8 +40,41 @@ export async function adminFetch<T = unknown>(
   });
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
-    throw new Error(`API ${res.status}: ${text}`);
+    let body: { message?: string; code?: string } | undefined;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = undefined;
+    }
+    throw new ApiError(res.status, body?.message || `API ${res.status}: ${text}`, body?.code, body);
   }
   return res.json() as Promise<T>;
 }
 
+/** Download a file (e.g. CSV export) from an authenticated endpoint. */
+export async function adminDownload(path: string, fallbackName: string): Promise<void> {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText);
+    let message = text;
+    try {
+      message = JSON.parse(text).message || text;
+    } catch {
+      /* not JSON */
+    }
+    throw new ApiError(res.status, message);
+  }
+  const blob = await res.blob();
+  const name =
+    /filename="?([^"]+)"?/.exec(res.headers.get("Content-Disposition") || "")?.[1] || fallbackName;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}

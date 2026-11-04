@@ -4,6 +4,8 @@ import authRoutes from "./routes/auth.router.js";
 import timeSlotRoutes from "./routes/time_slot.router.js";
 import bookingRoutes from "./routes/booking.router.js";
 import serviceRoutes from "./routes/service.router.js";
+import pitchRoutes from "./routes/pitch.router.js";
+import adminPitchesRouter from "./routes/admin/pitches.router.js";
 import "./services/cron.service.js"; // Import the cron service to start the scheduled tasks
 import paymentsRouter from "./routes/payments.router.js";
 import couponsRouter from "./routes/coupons.router.js";
@@ -15,9 +17,14 @@ import adminDashboardRouter from "./routes/admin/dashboard.router.js";
 import adminCouponRouter from "./routes/admin/coupon.router.js";
 import adminSettingsRouter from "./routes/admin/settings.router.js";
 import adminSubscriptionRouter from "./routes/admin/subscription.router.js";
+import adminTeamRouter from "./routes/admin/team.router.js";
+import adminReportsRouter from "./routes/admin/reports.router.js";
+import licenceRouter from "./routes/licence.router.js";
+import venueRouter from "./routes/venue.router.js";
 import authMiddleware from "./middlewares/auth.middleware.js";
 import adminMiddleware from "./middlewares/admin.middleware.js";
 import subscriptionGuard from "./middlewares/subscription.middleware.js";
+import { allowStaff } from "./middlewares/role.middleware.js";
 import cors from "cors";
 import morgan from "morgan";
 
@@ -66,17 +73,32 @@ app.use("/api/auth", authRoutes);
 app.use("/api/time-slots", timeSlotRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/services", serviceRoutes);
+app.use("/api/pitches", pitchRoutes);
 app.use("/api/coupons", couponsRouter);
 app.use("/api/profile/", profileRouter);
+app.use("/api/licence", licenceRouter);
+app.use("/api/venue", venueRouter);
 
-// Admin routes — protected by both auth and admin role guards
-app.use("/api/admin/bookings", authMiddleware, adminMiddleware, adminBookingsRouter);
-app.use("/api/admin/time-slots", authMiddleware, adminMiddleware, adminTimeSlotsRouter);
-app.use("/api/admin/services", authMiddleware, adminMiddleware, adminServicesRouter);
-app.use("/api/admin/dashboard", authMiddleware, adminMiddleware, adminDashboardRouter);
-app.use("/api/admin/coupons", authMiddleware, adminMiddleware, adminCouponRouter);
+// Admin routes — auth required. Admins can access everything; staff accounts
+// (plan feature "staffManagement") only the areas they are permitted.
+// Plan features/limits are enforced inside each router (requireFeature / requireLimit).
+const timeSlotArea = (req) => {
+    if (req.method !== "GET") return "pricing";
+    if (req.path.startsWith("/month-availability")) return "calendar";
+    // Day availability powers both the calendar and the manual booking modal
+    if (req.path.startsWith("/availability")) return ["calendar", "bookings"];
+    return "pricing";
+};
+
+app.use("/api/admin/bookings", authMiddleware, allowStaff("bookings"), adminBookingsRouter);
+app.use("/api/admin/time-slots", authMiddleware, allowStaff(timeSlotArea), adminTimeSlotsRouter);
+app.use("/api/admin/services", authMiddleware, allowStaff("services", { readAll: true }), adminServicesRouter);
+app.use("/api/admin/pitches", authMiddleware, allowStaff("pitches", { readAll: true }), adminPitchesRouter);
+app.use("/api/admin/dashboard", authMiddleware, allowStaff("dashboard"), adminDashboardRouter);
+app.use("/api/admin/coupons", authMiddleware, allowStaff("coupons"), adminCouponRouter);
+app.use("/api/admin/reports", authMiddleware, allowStaff("reports"), adminReportsRouter);
+app.use("/api/admin/subscription", authMiddleware, allowStaff("dashboard", { readAll: true }), adminSubscriptionRouter);
 app.use("/api/admin/settings", authMiddleware, adminMiddleware, adminSettingsRouter);
-app.use("/api/admin/subscription", authMiddleware, adminMiddleware, adminSubscriptionRouter);
-
+app.use("/api/admin/team", authMiddleware, adminMiddleware, adminTeamRouter);
 
 export default app;

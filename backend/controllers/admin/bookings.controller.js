@@ -2,6 +2,8 @@ import Booking from "../../models/booking.model.js";
 import User from "../../models/user.model.js";
 import Service from "../../models/service.model.js";
 import TimeSlot from "../../models/time_slot.model.js";
+import Pitch from "../../models/pitch.model.js";
+import { pitchOccupancyFilter } from "../../utils/pitch_conflict.js";
 import mongoose from "mongoose";
 
 // ---------------------------------------------------------------------------
@@ -49,7 +51,8 @@ function parseDayFilter(rawDate) {
  * date      – single-day filter.  Accepts:
  *               • YYYY-MM-DD  (native <input type="date"> value)
  *               • dd/mm/yyyy  (the format shown in the UI screenshot)
- * service   – MongoDB ObjectId of the service (pitch) to filter by        (string)
+ * service   – MongoDB ObjectId of the service (sport) to filter by        (string)
+ * pitch     – MongoDB ObjectId of the pitch to filter by                  (string)
  * status    – one of: pending | partial | paid | cancelled | expired       (string)
  * page      – 1-based page number  (default: 1)                           (number)
  * limit     – results per page    (default: 20, max: 100)                 (number)
@@ -73,6 +76,7 @@ export const getAllBookings = async (req, res) => {
             search = "",
             date,
             service: serviceId,
+            pitch: pitchId,
             status,
             page = 1,
             limit = 20,
@@ -110,9 +114,14 @@ export const getAllBookings = async (req, res) => {
             };
         }
 
-        // 2c. Service (pitch) filter
+        // 2c. Service (sport) filter
         if (serviceId && mongoose.Types.ObjectId.isValid(serviceId)) {
             bookingFilter.service = new mongoose.Types.ObjectId(serviceId);
+        }
+
+        // 2d. Pitch filter (exact match — legacy pitch-less bookings excluded)
+        if (pitchId && mongoose.Types.ObjectId.isValid(pitchId)) {
+            bookingFilter.pitch = new mongoose.Types.ObjectId(pitchId);
         }
 
         // ── 3. Handle search (requires a $lookup on User) ────────────────
@@ -164,6 +173,10 @@ export const getAllBookings = async (req, res) => {
                     select: "name description icon",
                 })
                 .populate({
+                    path: "pitch",
+                    select: "name size description",
+                })
+                .populate({
                     path: "time_slots",
                     select: "start_time end_time category price",
                 })
@@ -177,6 +190,7 @@ export const getAllBookings = async (req, res) => {
             booking_ref: `BK-${b._id.toString().slice(-4).toUpperCase()}`,
             customer: b.user ?? null,
             service: b.service ?? null,
+            pitch: b.pitch ?? null,
             date: b.date,
             time_slots: b.time_slots ?? [],
             status: b.status,
@@ -221,6 +235,7 @@ export const getBookingById = async (req, res) => {
         const booking = await Booking.findById(bookingId)
             .populate({ path: "user", select: "name phone email role" })
             .populate({ path: "service", select: "name description icon" })
+            .populate({ path: "pitch", select: "name size description" })
             .populate({ path: "time_slots", select: "start_time end_time category price" })
             .lean();
 
@@ -371,6 +386,7 @@ export const createAdminBooking = async (req, res) => {
             customer_phone,
             customer_email,
             service,
+            pitch,
             date,
             time_slots,
             status = "paid",
@@ -403,6 +419,15 @@ export const createAdminBooking = async (req, res) => {
             }
         }
 
+        // 2b. Resolve pitch (required — slots are unique per pitch per day)
+        if (!pitch || !mongoose.Types.ObjectId.isValid(pitch)) {
+            return res.status(400).json({ message: "Please select a valid pitch." });
+        }
+        const pitchDoc = await Pitch.findById(pitch).select("_id").lean();
+        if (!pitchDoc) {
+            return res.status(404).json({ message: "Pitch not found." });
+        }
+
         // 3. Normalize & validate time slots
         const rawSlots = Array.isArray(time_slots) ? time_slots : [time_slots];
         const slotIds = rawSlots.filter((id) => id && mongoose.Types.ObjectId.isValid(id));
@@ -422,16 +447,17 @@ export const createAdminBooking = async (req, res) => {
         }
         const { startDate, endDate } = parsedDay;
 
-        // 5. Check slot conflicts GLOBALLY (slots are global across all services)
+        // 5. Check slot conflicts on this pitch (services/sports don't matter)
         const conflict = await Booking.findOne({
             date: { $gte: startDate, $lt: endDate },
             time_slots: { $in: slotIds },
             status: { $ne: "cancelled" },
+            ...pitchOccupancyFilter(pitch),
         });
 
         if (conflict) {
             return res.status(409).json({
-                message: "This slot is already booked on this date. Please choose another slot.",
+                message: "This slot is already booked on this pitch for this date. Please choose another slot or pitch.",
             });
         }
 
@@ -464,6 +490,7 @@ export const createAdminBooking = async (req, res) => {
         const newBooking = new Booking({
             user: user._id,
             service: resolvedServiceId,
+            pitch: pitchDoc._id,
             time_slots: slotIds,
             date: startDate,
             total_payable: totalPayable,
@@ -478,6 +505,7 @@ export const createAdminBooking = async (req, res) => {
         await newBooking.populate([
             { path: "user", select: "name phone email" },
             { path: "service", select: "name description icon" },
+            { path: "pitch", select: "name size description" },
             { path: "time_slots", select: "start_time end_time category price" },
         ]);
 
@@ -488,6 +516,7 @@ export const createAdminBooking = async (req, res) => {
                 booking_ref: `BK-${newBooking._id.toString().slice(-4).toUpperCase()}`,
                 customer: newBooking.user,
                 service: newBooking.service,
+                pitch: newBooking.pitch,
                 date: newBooking.date,
                 time_slots: newBooking.time_slots,
                 status: newBooking.status,
@@ -504,3 +533,30 @@ export const createAdminBooking = async (req, res) => {
     }
 };
 
+
+// ---------------------------------------------------------------------------
+// DELETE /api/admin/bookings/:bookingId
+// ---------------------------------------------------------------------------
+/**
+ * Permanently delete a booking. This frees its time slots on that pitch/date.
+ */
+export const deleteBooking = async (req, res) => {
+    try {
+        const { bookingId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+            return res.status(400).json({ message: "Invalid booking ID." });
+        }
+
+        const booking = await Booking.findByIdAndDelete(bookingId).lean();
+        if (!booking) {
+            return res.status(404).json({ message: "Booking not found." });
+        }
+
+        const ref = `BK-${booking._id.toString().slice(-4).toUpperCase()}`;
+        return res.status(200).json({ message: `Booking ${ref} deleted successfully.`, booking_ref: ref });
+    } catch (error) {
+        console.error("Admin deleteBooking error:", error);
+        return res.status(500).json({ message: "Failed to delete booking." });
+    }
+};

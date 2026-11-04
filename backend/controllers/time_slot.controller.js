@@ -1,5 +1,7 @@
 import TimeSlot from "../models/time_slot.model.js";
 import Booking from "../models/booking.model.js";
+import mongoose from "mongoose";
+import { pitchOccupancyFilter } from "../utils/pitch_conflict.js";
 
 export const createTimeSlot = async (req, res) => {
     try {
@@ -22,10 +24,20 @@ export const getAllTimeSlots = async (req, res) => {
 }
 
 
-// Get available time slots for a specific date
+// Get available time slots for a specific date.
+// Optional query param `pitch`: when given, only bookings on that pitch
+// (plus legacy pitch-less bookings) block a slot. Without it, any booking
+// on the date blocks the slot.
 export const getAvailableTimeSlots = async (req, res) => {
     try {
         const { date } = req.params;
+        const { pitch } = req.query;
+
+        if (pitch !== undefined && !mongoose.Types.ObjectId.isValid(pitch)) {
+            return res.status(400).json({
+                message: "Invalid pitch ID"
+            });
+        }
 
         // 1. Validate YYYY-MM-DD format
         if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -56,7 +68,8 @@ export const getAvailableTimeSlots = async (req, res) => {
                 $gte: startDate,
                 $lt: endDate
             },
-            status: { $ne: "cancelled" }
+            status: { $ne: "cancelled" },
+            ...(pitch ? pitchOccupancyFilter(pitch) : {})
         }).select("time_slots");
 
         // 5. Collect all booked slot IDs

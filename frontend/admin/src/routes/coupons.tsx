@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { featurePage } from "@/components/turf/featurePage";
 import { useState, useEffect } from "react";
 import { Pencil, Plus, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -25,7 +26,7 @@ import { useSubscription } from "@/lib/useSubscription";
 
 export const Route = createFileRoute("/coupons")({
   head: () => pageMeta("Coupons", "Create and track percentage discount coupons."),
-  component: CouponsPage,
+  component: featurePage("coupons", "Coupons", CouponsPage),
 });
 
 interface ApiCoupon {

@@ -8,7 +8,9 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "seed:time_slots": "node data/seed.time_slots.js",
-    "seed:admin":"node data/seed.admin.js"
+    "seed:admin":"node data/seed.admin.js",
+    "seed:demo": "node data/seed.demo_bookings.js",
+    "seed:demo:clear": "node data/seed.demo_bookings.js --clear"
   },
   "keywords": [],
   "author": "",

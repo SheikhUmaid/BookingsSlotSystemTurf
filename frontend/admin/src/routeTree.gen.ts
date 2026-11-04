@@ -14,10 +14,13 @@ import { Route as BookingsRouteImport } from './routes/bookings'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as CouponsRouteImport } from './routes/coupons'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as PaymentsRouteImport } from './routes/payments'
+import { Route as PitchesRouteImport } from './routes/pitches'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SubscriptionRouteImport } from './routes/subscription'
+import { Route as TeamRouteImport } from './routes/team'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -44,14 +47,19 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PaymentsRoute = PaymentsRouteImport.update({
-  id: '/payments',
-  path: '/payments',
+const PitchesRoute = PitchesRouteImport.update({
+  id: '/pitches',
+  path: '/pitches',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServicesRoute = ServicesRouteImport.update({
@@ -64,6 +72,16 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SubscriptionRoute = SubscriptionRouteImport.update({
+  id: '/subscription',
+  path: '/subscription',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeamRoute = TeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -71,10 +89,13 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof CalendarRoute
   '/coupons': typeof CouponsRoute
   '/login': typeof LoginRoute
-  '/payments': typeof PaymentsRoute
+  '/pitches': typeof PitchesRoute
   '/pricing': typeof PricingRoute
+  '/reports': typeof ReportsRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
+  '/subscription': typeof SubscriptionRoute
+  '/team': typeof TeamRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -82,10 +103,13 @@ export interface FileRoutesByTo {
   '/calendar': typeof CalendarRoute
   '/coupons': typeof CouponsRoute
   '/login': typeof LoginRoute
-  '/payments': typeof PaymentsRoute
+  '/pitches': typeof PitchesRoute
   '/pricing': typeof PricingRoute
+  '/reports': typeof ReportsRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
+  '/subscription': typeof SubscriptionRoute
+  '/team': typeof TeamRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -94,10 +118,13 @@ export interface FileRoutesById {
   '/calendar': typeof CalendarRoute
   '/coupons': typeof CouponsRoute
   '/login': typeof LoginRoute
-  '/payments': typeof PaymentsRoute
+  '/pitches': typeof PitchesRoute
   '/pricing': typeof PricingRoute
+  '/reports': typeof ReportsRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
+  '/subscription': typeof SubscriptionRoute
+  '/team': typeof TeamRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,10 +134,13 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/coupons'
     | '/login'
-    | '/payments'
+    | '/pitches'
     | '/pricing'
+    | '/reports'
     | '/services'
     | '/settings'
+    | '/subscription'
+    | '/team'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -118,10 +148,13 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/coupons'
     | '/login'
-    | '/payments'
+    | '/pitches'
     | '/pricing'
+    | '/reports'
     | '/services'
     | '/settings'
+    | '/subscription'
+    | '/team'
   id:
     | '__root__'
     | '/'
@@ -129,10 +162,13 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/coupons'
     | '/login'
-    | '/payments'
+    | '/pitches'
     | '/pricing'
+    | '/reports'
     | '/services'
     | '/settings'
+    | '/subscription'
+    | '/team'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -141,10 +177,13 @@ export interface RootRouteChildren {
   CalendarRoute: typeof CalendarRoute
   CouponsRoute: typeof CouponsRoute
   LoginRoute: typeof LoginRoute
-  PaymentsRoute: typeof PaymentsRoute
+  PitchesRoute: typeof PitchesRoute
   PricingRoute: typeof PricingRoute
+  ReportsRoute: typeof ReportsRoute
   ServicesRoute: typeof ServicesRoute
   SettingsRoute: typeof SettingsRoute
+  SubscriptionRoute: typeof SubscriptionRoute
+  TeamRoute: typeof TeamRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -184,11 +223,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/payments': {
-      id: '/payments'
-      path: '/payments'
-      fullPath: '/payments'
-      preLoaderRoute: typeof PaymentsRouteImport
+    '/pitches': {
+      id: '/pitches'
+      path: '/pitches'
+      fullPath: '/pitches'
+      preLoaderRoute: typeof PitchesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -196,6 +235,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/services': {
@@ -212,6 +258,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/subscription': {
+      id: '/subscription'
+      path: '/subscription'
+      fullPath: '/subscription'
+      preLoaderRoute: typeof SubscriptionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/team': {
+      id: '/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof TeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -221,10 +281,13 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarRoute: CalendarRoute,
   CouponsRoute: CouponsRoute,
   LoginRoute: LoginRoute,
-  PaymentsRoute: PaymentsRoute,
+  PitchesRoute: PitchesRoute,
   PricingRoute: PricingRoute,
+  ReportsRoute: ReportsRoute,
   ServicesRoute: ServicesRoute,
   SettingsRoute: SettingsRoute,
+  SubscriptionRoute: SubscriptionRoute,
+  TeamRoute: TeamRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

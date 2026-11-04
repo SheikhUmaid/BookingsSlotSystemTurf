@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
@@ -9,8 +9,8 @@ import {
   ChevronDown,
   Clock,
   CreditCard,
-  Goal,
   LayoutDashboard,
+  Menu,
   LogOut,
   Plus,
   Search,
@@ -18,7 +18,11 @@ import {
   Ticket,
   ListChecks,
   Layers,
+  LandPlot,
   Lock,
+  BarChart3,
+  Users,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,29 +33,58 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 import { BookingModal } from "./BookingModal";
-import { useSubscription } from "@/lib/useSubscription";
+import { useSubscription, type FeatureKey, type StaffArea } from "@/lib/useSubscription";
+import { NoAccess } from "./plan";
+import { BuiltByZinth, ProductLockup, ZinthFooter } from "./brand";
 
-const nav = [
-  { to: "/", label: "Overview", icon: LayoutDashboard },
-  { to: "/bookings", label: "Bookings", icon: ListChecks },
-  { to: "/calendar", label: "Calendar & Availability", icon: CalendarDays },
-  { to: "/services", label: "Services / Pitches", icon: Layers },
-  { to: "/pricing", label: "Time Slots & Pricing", icon: Clock },
-  { to: "/coupons", label: "Coupons", icon: Ticket },
-  { to: "/payments", label: "Payments", icon: CreditCard },
-  { to: "/settings", label: "Settings", icon: Settings },
-] as const;
+type NavItem = {
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  /** Staff permission needed (admins always pass). */
+  area?: StaffArea;
+  /** Admin-only section: hidden for staff. */
+  adminOnly?: boolean;
+  /** Shown with a lock + "Upgrade" tag unless at least one of these features is on. */
+  features?: FeatureKey[];
+};
+
+const nav: NavItem[] = [
+  { to: "/", label: "Overview", icon: LayoutDashboard, area: "dashboard", features: ["basicAnalytics"] },
+  { to: "/bookings", label: "Bookings", icon: ListChecks, area: "bookings" },
+  { to: "/calendar", label: "Calendar & Availability", icon: CalendarDays, area: "calendar", features: ["calendarManagement"] },
+  { to: "/services", label: "Services", icon: Layers, area: "services" },
+  { to: "/pitches", label: "Pitches", icon: LandPlot, area: "pitches" },
+  { to: "/pricing", label: "Time Slots & Pricing", icon: Clock, area: "pricing" },
+  { to: "/coupons", label: "Coupons", icon: Ticket, area: "coupons", features: ["coupons"] },
+  {
+    to: "/reports",
+    label: "Reports",
+    icon: BarChart3,
+    area: "reports",
+    features: ["advancedAnalytics", "leaderboards", "pitchWiseReports", "financialExports"],
+  },
+  { to: "/team", label: "Team", icon: Users, adminOnly: true },
+  { to: "/subscription", label: "Subscription", icon: CreditCard, adminOnly: true },
+  { to: "/settings", label: "Settings", icon: Settings, adminOnly: true },
+];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { openBooking } = useStore();
-  const current = nav.find((n) => n.to === path) ?? nav[0];
+  const current = nav.find((n) => n.to === path) ?? nav[0]!;
 
   const navigate = useNavigate();
-  const { isInactive, status, deploymentId, daysLeft } = useSubscription();
+  const { isInactive, status, noPlan, manualBookingLocked, bookingsDisabled, isAdmin, can, role } =
+    useSubscription();
+  const allowed = (n: NavItem) => (n.adminOnly ? isAdmin : !n.area || can(n.area));
+  const currentRoute = nav.find((n) => n.to === path);
+  const blockedHere = currentRoute ? !allowed(currentRoute) : false;
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
@@ -61,93 +94,109 @@ export function AppShell({ children }: { children: ReactNode }) {
     navigate({ to: "/login" });
   };
 
-  const adminUser = typeof window !== "undefined" ? (() => {
-    try {
-      return JSON.parse(localStorage.getItem("admin_user") || "null");
-    } catch {
-      return null;
-    }
-  })() : null;
+  const adminUser =
+    typeof window !== "undefined"
+      ? (() => {
+          try {
+            return JSON.parse(localStorage.getItem("admin_user") || "null");
+          } catch {
+            return null;
+          }
+        })()
+      : null;
   const adminName = adminUser?.name || "Sheikh Umaid";
-  const adminRole = adminUser?.role === "admin" ? "Owner / Admin" : "Owner";
-  const adminInitials = adminName.split(" ").filter(Boolean).map((w: string) => w[0]).join("").toUpperCase().slice(0, 2) || "SU";
+  const adminRole = role === "staff" ? "Staff" : "Owner / Admin";
+  const adminInitials =
+    adminName
+      .split(" ")
+      .filter(Boolean)
+      .map((w: string) => w[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "SU";
 
   return (
     <div className="flex min-h-screen w-full bg-surface">
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-[220px] flex-col border-r bg-sidebar md:flex">
-        <div className="flex h-14 items-center gap-2.5 border-b px-4">
-          <div className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground shadow-xs">
-            <Goal className="size-4.5" />
-          </div>
-          <div className="leading-tight">
-            <div className="text-[14px] font-bold tracking-tight text-foreground">TurfOS</div>
-            <div className="text-[10.5px] font-medium text-muted-foreground">by Zinth Labs</div>
-          </div>
-        </div>
-        <nav className="flex-1 space-y-0.5 p-2.5">
-          {nav.map((n) => {
-            const active = n.to === path;
-            return (
-              <Link
-                key={n.to}
-                to={n.to}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-sidebar-foreground transition-colors hover:bg-secondary",
-                  active && "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent",
-                )}
-              >
-                <n.icon className={cn("size-4", active ? "text-primary" : "text-muted-foreground")} />
-                {n.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="border-t p-2.5">
-          <div className="flex items-center gap-2.5 rounded-md px-2 py-2">
-            <div className="grid size-8 place-items-center rounded-full bg-primary-soft text-[12px] font-semibold text-primary-soft-foreground">
-              {adminInitials}
-            </div>
-            <div className="min-w-0 flex-1 leading-tight">
-              <div className="truncate text-[13px] font-medium">{adminName}</div>
-              <div className="truncate text-[11px] text-muted-foreground">{adminRole}</div>
-            </div>
-            <button
-              aria-label="Log out"
-              onClick={handleLogout}
-              title="Log out"
-              className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
-            >
-              <LogOut className="size-4" />
-            </button>
-          </div>
-          <div className="mt-1 px-2 pt-1 border-t border-border/40 text-[10px] text-muted-foreground/75">
-            Zinth Labs · Digital product studio
-          </div>
-        </div>
+        <SidebarBody
+          path={path}
+          adminName={adminName}
+          adminRole={adminRole}
+          adminInitials={adminInitials}
+          onLogout={handleLogout}
+        />
       </aside>
+
+      <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <SheetContent
+          side="left"
+          className="flex w-[260px] flex-col gap-0 bg-sidebar p-0 sm:max-w-[260px]"
+        >
+          <SheetTitle className="sr-only">Navigation</SheetTitle>
+          <SidebarBody
+            path={path}
+            adminName={adminName}
+            adminRole={adminRole}
+            adminInitials={adminInitials}
+            onLogout={handleLogout}
+            onNavigate={() => setMobileNavOpen(false)}
+          />
+        </SheetContent>
+      </Sheet>
 
       <div className="flex min-w-0 flex-1 flex-col md:pl-[220px]">
         {/* GLOBAL INACTIVE WARNING BANNER */}
         {isInactive && (
-          <div className="sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 bg-destructive px-5 py-2.5 text-destructive-foreground shadow-md">
-            <div className="flex items-center gap-2.5 text-[13px] font-medium">
+          <div className="sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 bg-destructive px-4 py-2.5 sm:px-5 text-destructive-foreground shadow-md">
+            <div className="flex min-w-0 items-center gap-2.5 text-[12.5px] font-medium sm:text-[13px]">
               <AlertOctagon className="size-4.5 shrink-0 animate-pulse" />
               <span>
-                <strong>Your account is {status.toUpperCase()}.</strong> Write access is currently disabled (view-only mode). You cannot create bookings, coupons, or update pitches until the license is renewed.
+                {noPlan ? (
+                  <>
+                    <strong>No active plan.</strong> This deployment has no subscription plan, so
+                    write access is disabled (view-only mode) until a plan is assigned.
+                  </>
+                ) : (
+                  <>
+                    <strong>Your account is {status.toUpperCase()}.</strong> Write access is currently
+                    disabled (view-only mode). You cannot create bookings, coupons, or update pitches
+                    until the license is renewed.
+                  </>
+                )}
               </span>
             </div>
-            <Link
-              to="/payments"
-              className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1 text-[12px] font-semibold text-destructive shadow-sm hover:bg-white/95"
-            >
-              Renew Subscription <ArrowRight className="size-3.5" />
-            </Link>
+            {isAdmin && (
+              <Link
+                to="/subscription"
+                className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1 text-[12px] font-semibold text-destructive shadow-sm hover:bg-white/95"
+              >
+                Renew Subscription <ArrowRight className="size-3.5" />
+              </Link>
+            )}
+          </div>
+        )}
+        {!isInactive && bookingsDisabled && (
+          <div className="flex items-center gap-2.5 bg-warning-soft px-4 py-2 text-[12.5px] font-medium text-warning sm:px-5">
+            <AlertOctagon className="size-4 shrink-0" />
+            Bookings are currently disabled for this venue by the licence registry. Existing data is
+            unaffected.
           </div>
         )}
 
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b bg-background px-5">
-          <div className="text-[13px] text-muted-foreground">
-            <span className="font-semibold text-foreground/80">TurfOS</span> <span className="mx-1">/</span> <span className="font-medium text-foreground">{current.label}</span>
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background px-3 sm:gap-3 sm:px-5">
+          <button
+            aria-label="Open navigation"
+            onClick={() => setMobileNavOpen(true)}
+            className="grid size-9 shrink-0 place-items-center rounded-md border border-primary/40 text-primary hover:bg-primary-soft md:hidden"
+          >
+            <Menu className="size-4.5" />
+          </button>
+          <div className="min-w-0 truncate text-[13px] text-muted-foreground">
+            <span className="hidden font-display text-[15px] font-bold uppercase tracking-wide text-foreground/80 sm:inline">
+              TurfOS
+            </span>
+            <span className="mx-1 hidden sm:inline">/</span>
+            <span className="font-medium text-foreground">{current.label}</span>
           </div>
           <div className="relative ml-auto hidden w-64 lg:block">
             <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -158,13 +207,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <button
             aria-label="Notifications"
-            className="relative grid size-8 place-items-center rounded-md hover:bg-secondary"
+            className="relative ml-auto grid size-8 shrink-0 place-items-center rounded-md hover:bg-secondary lg:ml-0"
           >
             <Bell className="size-4" />
             <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-destructive" />
           </button>
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-md px-1.5 py-1 hover:bg-secondary">
+            <DropdownMenuTrigger className="flex shrink-0 items-center gap-1.5 rounded-md px-1.5 py-1 hover:bg-secondary">
               <div className="grid size-7 place-items-center rounded-full bg-primary-soft text-[11px] font-semibold text-primary-soft-foreground">
                 {adminInitials}
               </div>
@@ -173,42 +222,150 @@ export function AppShell({ children }: { children: ReactNode }) {
             <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuLabel>
                 <div className="font-semibold text-foreground">{adminName}</div>
-                <div className="text-[10.5px] font-normal text-muted-foreground">TurfOS by Zinth Labs</div>
+                <div className="text-[10.5px] font-normal text-muted-foreground">
+                  TurfOS by Zinth Labs
+                </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/settings">Settings</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/payments">Subscription & License</Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+              {isAdmin && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings">Settings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/subscription">Subscription</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="cursor-pointer text-destructive focus:text-destructive"
+              >
                 <LogOut className="mr-2 size-3.5" />
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {isInactive ? (
+          {manualBookingLocked ? (
             <Button
               size="sm"
               disabled
-              title="Account inactive: write access is blocked"
-              className="cursor-not-allowed opacity-60 gap-1.5"
+              title={
+                isInactive
+                  ? "Account inactive: write access is blocked"
+                  : bookingsDisabled
+                    ? "Bookings are disabled for this venue"
+                    : "Manual bookings are not included in your plan"
+              }
+              className="shrink-0 cursor-not-allowed gap-1.5 opacity-60"
             >
-              <Lock className="size-3.5" /> Quick Booking (Locked)
+              <Lock className="size-3.5" />{" "}
+              <span className="hidden sm:inline">Quick Booking (Locked)</span>
             </Button>
           ) : (
-            <Button size="sm" onClick={() => openBooking()} className="gap-1.5">
-              <Plus className="size-4" /> Quick Booking
+            <Button
+              size="sm"
+              onClick={() => openBooking()}
+              className="shrink-0 gap-1.5"
+              aria-label="Quick Booking"
+            >
+              <Plus className="size-4" /> <span className="hidden sm:inline">Quick Booking</span>
             </Button>
           )}
         </header>
 
-        <main className="flex-1 p-5 lg:p-6">{children}</main>
+        <main className="min-w-0 flex-1 p-3 sm:p-5 lg:p-6">{blockedHere ? <NoAccess /> : children}</main>
+        <ZinthFooter />
       </div>
       <BookingModal />
     </div>
+  );
+}
+
+function SidebarBody({
+  path,
+  adminName,
+  adminRole,
+  adminInitials,
+  onLogout,
+  onNavigate,
+}: {
+  path: string;
+  adminName: string;
+  adminRole: string;
+  adminInitials: string;
+  onLogout: () => void;
+  onNavigate?: () => void;
+}) {
+  const { hasFeature, plan, isAdmin, can } = useSubscription();
+  const allowed = (n: NavItem) => (n.adminOnly ? isAdmin : !n.area || can(n.area));
+  return (
+    <>
+      <div className="flex h-14 shrink-0 items-center border-b px-4">
+        <ProductLockup />
+      </div>
+      <nav className="flex-1 space-y-0.5 overflow-y-auto p-2.5">
+        {nav.filter(allowed).map((n) => {
+          const active = n.to === path;
+          const locked = !!n.features && !n.features.some((f) => hasFeature(f));
+          return (
+            <Link
+              key={n.to}
+              to={n.to}
+              onClick={onNavigate}
+              className={cn(
+                "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-sidebar-foreground transition-colors hover:bg-secondary",
+                active &&
+                  "relative bg-sidebar-accent before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-full before:bg-primary text-sidebar-accent-foreground hover:bg-sidebar-accent",
+              )}
+            >
+              <n.icon
+                className={cn("size-4 shrink-0", active ? "text-primary" : "text-muted-foreground")}
+              />
+              <span className="min-w-0 flex-1 truncate">{n.label}</span>
+              {locked && (
+                <Lock
+                  aria-label="Not in your plan"
+                  className="size-3.5 shrink-0 text-muted-foreground/70"
+                />
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="border-t p-2.5">
+        {plan && (
+          <Link
+            to={isAdmin ? "/subscription" : path}
+            onClick={onNavigate}
+            className="mb-1.5 flex items-center gap-2 rounded-md border border-primary/20 bg-primary-soft/60 px-2.5 py-1.5 text-[12px] hover:bg-primary-soft"
+          >
+            <Sparkles className="size-3.5 shrink-0 text-primary" />
+            <span className="font-semibold text-primary-soft-foreground">{plan.name} plan</span>
+            {isAdmin && <span className="ml-auto text-[11px] text-primary">Upgrade</span>}
+          </Link>
+        )}
+        <div className="flex items-center gap-2.5 rounded-md px-2 py-2">
+          <div className="grid size-8 place-items-center rounded-full bg-primary-soft text-[12px] font-semibold text-primary-soft-foreground">
+            {adminInitials}
+          </div>
+          <div className="min-w-0 flex-1 leading-tight">
+            <div className="truncate text-[13px] font-medium">{adminName}</div>
+            <div className="truncate text-[11px] text-muted-foreground">{adminRole}</div>
+          </div>
+          <button
+            aria-label="Log out"
+            onClick={onLogout}
+            title="Log out"
+            className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+          >
+            <LogOut className="size-4" />
+          </button>
+        </div>
+        <BuiltByZinth className="mt-1.5" />
+      </div>
+    </>
   );
 }

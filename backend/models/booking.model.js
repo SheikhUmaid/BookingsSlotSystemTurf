@@ -11,6 +11,13 @@ const bookingSchema = mongoose.Schema({
         ref: "Service",
         required: true
     },
+    // Not required at schema level so legacy bookings (pre-pitch) stay valid.
+    // Controllers require it for every new booking.
+    pitch: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Pitch",
+        default: null
+    },
     time_slots: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "TimeSlot",

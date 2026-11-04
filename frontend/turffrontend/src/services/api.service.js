@@ -3,7 +3,7 @@ import axios from 'axios';
 
 
 const authAPI = axios.create({
-    baseURL: "http://10.168.78.5:5000/api", withCredentials: true,
+    baseURL: "http://localhost:5000/api", withCredentials: true,
 });
 
 
@@ -54,8 +54,26 @@ export const verifyCoupon = (coupon) => {
 };
 
 
-export const fetchAvailableTimeSlots = (date, config = {}) => {
-  return authAPI.get(`/time-slots/available/${date}`, config);
+// Public venue licence: { bookingEnabled, blocked, plan, features }
+export const fetchLicence = () => {
+  return authAPI.get("/licence");
+};
+
+// Public turf details: { venue: { name, tagline, full_address, opening_hours, directions_url, ... } }
+export const fetchVenue = () => {
+  return authAPI.get("/venue");
+};
+
+export const fetchPitches = () => {
+  return authAPI.get("/pitches/");
+};
+
+// Availability is per pitch: a slot is unique per (pitch, date)
+export const fetchAvailableTimeSlots = (date, pitch, config = {}) => {
+  return authAPI.get(`/time-slots/available/${date}`, {
+    ...config,
+    params: { ...(config.params || {}), ...(pitch ? { pitch } : {}) },
+  });
 };
 
 export const fetchMyBookings = () => {

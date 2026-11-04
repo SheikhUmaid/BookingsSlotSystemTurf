@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { featurePage } from "@/components/turf/featurePage";
 import { useState, useMemo, useEffect } from "react";
 import { ArrowUpRight, CalendarCheck, CalendarClock, IndianRupee, ListChecks, Wallet, Loader2 } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -10,7 +11,7 @@ import { adminFetch } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
   head: () => pageMeta("Overview", "Bookings, revenue and today's turf schedule at a glance."),
-  component: Overview,
+  component: featurePage("basicAnalytics", "Overview", Overview),
 });
 
 const statusColors: Record<string, string> = {

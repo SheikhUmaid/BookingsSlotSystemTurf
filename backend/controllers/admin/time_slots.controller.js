@@ -1,7 +1,8 @@
 import TimeSlot from "../../models/time_slot.model.js";
 import Booking from "../../models/booking.model.js";
-import Service from "../../models/service.model.js";
+import Pitch from "../../models/pitch.model.js";
 import mongoose from "mongoose";
+import { pitchOccupancyFilter } from "../../utils/pitch_conflict.js";
 
 /**
  * Parse date parameter (YYYY-MM-DD or DD/MM/YYYY) into UTC { startDate, endDate, dateStr }
@@ -31,14 +32,20 @@ function parseDay(rawDate) {
 // GET /api/admin/time-slots/availability
 // ---------------------------------------------------------------------------
 /**
- * Get all time slots with their booked status and details for a given date and service.
+ * Get all time slots with their booked status and details for a given date.
  * Query params:
- *   date    – YYYY-MM-DD or DD/MM/YYYY (default: today)
- *   service – ObjectId of pitch/service (optional; if omitted, checks all pitches or first)
+ *   date  – YYYY-MM-DD or DD/MM/YYYY (default: today)
+ *   pitch – ObjectId of a pitch (optional). When given, only bookings on that
+ *           pitch (and legacy pitch-less bookings) mark a slot as booked.
+ *           When omitted, any booking on the date marks the slot as booked.
  */
 export const getTimeSlotsAvailability = async (req, res) => {
     try {
-        const { date, service } = req.query;
+        const { date, pitch } = req.query;
+
+        if (pitch && !mongoose.Types.ObjectId.isValid(pitch)) {
+            return res.status(400).json({ message: "Invalid pitch ID format." });
+        }
 
         const day = parseDay(date);
         if (!day) {
@@ -49,16 +56,18 @@ export const getTimeSlotsAvailability = async (req, res) => {
         // 1. Fetch all system time slots sorted by start_time
         const allSlots = await TimeSlot.find().sort({ start_time: 1 }).lean();
 
-        // 2. Build booking query for that day — GLOBAL across the venue
+        // 2. Build booking query for that day, scoped to the pitch if given
         const bookingQuery = {
             date: { $gte: startDate, $lt: endDate },
             status: { $ne: "cancelled" },
+            ...(pitch ? pitchOccupancyFilter(pitch) : {}),
         };
 
         // 3. Find all active bookings on that date
         const bookings = await Booking.find(bookingQuery)
             .populate("user", "name phone email")
             .populate("service", "name")
+            .populate("pitch", "name")
             .lean();
 
         // 4. Map booked slot IDs to booking details
@@ -78,6 +87,8 @@ export const getTimeSlotsAvailability = async (req, res) => {
                     amount_paid: b.amount_paid,
                     service_id: b.service?._id || b.service,
                     service_name: b.service?.name,
+                    pitch_id: b.pitch?._id || b.pitch || null,
+                    pitch_name: b.pitch?.name,
                 });
             }
         }
@@ -106,7 +117,7 @@ export const getTimeSlotsAvailability = async (req, res) => {
 
         return res.status(200).json({
             date: dateStr,
-            service: service || null,
+            pitch: pitch || null,
             total_slots: enrichedSlots.length,
             open_count: openCount,
             booked_count: bookedCount,
@@ -125,12 +136,16 @@ export const getTimeSlotsAvailability = async (req, res) => {
 /**
  * Returns daily availability status ("open" | "limited" | "full") for an entire month.
  * Query params:
- *   month   – YYYY-MM (e.g. "2026-10", default: current month)
- *   service – ObjectId of service/pitch (optional)
+ *   month – YYYY-MM (e.g. "2026-10", default: current month)
+ *   pitch – ObjectId of a pitch (optional; scopes counts to that pitch)
  */
 export const getMonthAvailability = async (req, res) => {
     try {
-        const { month, service } = req.query;
+        const { month, pitch } = req.query;
+
+        if (pitch && !mongoose.Types.ObjectId.isValid(pitch)) {
+            return res.status(400).json({ message: "Invalid pitch ID format." });
+        }
 
         let year, monthNum;
         if (month && /^\d{4}-\d{2}$/.test(month)) {
@@ -147,12 +162,16 @@ export const getMonthAvailability = async (req, res) => {
         const daysInMonth = new Date(Date.UTC(year, monthNum, 0)).getUTCDate();
         const endOfMonth = new Date(Date.UTC(year, monthNum - 1, daysInMonth, 23, 59, 59, 999));
 
-        const totalSlotsCount = await TimeSlot.countDocuments();
+        // Capacity per day: one pitch's slots when scoped, otherwise every pitch's slots
+        const slotCount = await TimeSlot.countDocuments();
+        const pitchCount = pitch ? 1 : Math.max(1, await Pitch.countDocuments());
+        const totalSlotsCount = slotCount * pitchCount;
 
-        // Global booking query for the month — slots are global across the venue
+        // Booking query for the month, scoped to the pitch if given
         const bookingQuery = {
             date: { $gte: startOfMonth, $lte: endOfMonth },
             status: { $ne: "cancelled" },
+            ...(pitch ? pitchOccupancyFilter(pitch) : {}),
         };
 
         const bookings = await Booking.find(bookingQuery).select("date time_slots").lean();
@@ -181,7 +200,7 @@ export const getMonthAvailability = async (req, res) => {
 
         return res.status(200).json({
             month: `${year}-${String(monthNum).padStart(2, "0")}`,
-            service: service || null,
+            pitch: pitch || null,
             total_slots: totalSlotsCount,
             days,
         });

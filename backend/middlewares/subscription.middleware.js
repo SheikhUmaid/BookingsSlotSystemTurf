@@ -1,43 +1,40 @@
-import Setting from "../models/setting.model.js";
+import { getLicence, blockedReason } from "../services/licence.service.js";
 
 /**
  * Middleware that blocks write operations (POST, PUT, PATCH, DELETE)
- * when the account/deployment status is not "active" (e.g. "inactive" or "suspended").
+ * when the licence is not usable:
+ *   - deployment status is not "active" (inactive / suspended), or
+ *   - the subscription has expired, or
+ *   - the registry reports no plan (plan === null).
  *
  * Exemptions:
- * - GET and HEAD requests are read-only and always allowed.
- * - /api/admin/subscription/* routes are allowed so the admin can check status and make renewal payments.
+ * - GET / HEAD / OPTIONS are read-only and always allowed.
+ * - /api/admin/subscription/* so the admin can check status and renew.
+ * - /api/auth/* so users can still sign in (login is not a data write).
+ * - /api/payments/razorpay-webhook so payments already taken are still recorded.
  */
-const subscriptionGuard = async (req, res, next) => {
-    // Read-only methods are always allowed
-    if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
-        return next();
-    }
+const EXEMPT_PREFIXES = ["/api/admin/subscription", "/api/auth/", "/api/payments/razorpay-webhook"];
 
-    // Allow subscription renewal / status routes so the admin can pay and unlock
-    if (req.originalUrl && req.originalUrl.includes("/api/admin/subscription")) {
-        return next();
-    }
+const subscriptionGuard = async (req, res, next) => {
+    if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
+
+    const url = req.originalUrl || "";
+    if (EXEMPT_PREFIXES.some((p) => url.startsWith(p))) return next();
 
     try {
-        let setting = await Setting.findOne().select("deploymentStatus subscriptionExpiresAt bookingEnabled");
-        if (!setting) {
-            return next();
-        }
+        const licence = await getLicence();
+        const blocked = blockedReason(licence);
+        if (!blocked) return next();
 
-        const status = setting.deploymentStatus || "active";
-        const isExpired = setting.subscriptionExpiresAt && new Date(setting.subscriptionExpiresAt).getTime() <= Date.now();
-
-        if (status !== "active" || isExpired) {
-            return res.status(403).json({
-                success: false,
-                code: "SUBSCRIPTION_INACTIVE",
-                message: "Your account/subscription is inactive. Write operations are disabled until the subscription is renewed.",
-                status: status === "active" && isExpired ? "expired" : status,
-            });
-        }
-
-        next();
+        return res.status(403).json({
+            success: false,
+            code: blocked.code,
+            status: blocked.reason,
+            message:
+                blocked.code === "NO_PLAN"
+                    ? "No active plan was found for this deployment. Write operations are disabled until a plan is assigned."
+                    : "Your account/subscription is inactive. Write operations are disabled until the subscription is renewed.",
+        });
     } catch (err) {
         console.error("subscriptionGuard error:", err);
         next();
@@ -45,4 +42,3 @@ const subscriptionGuard = async (req, res, next) => {
 };
 
 export default subscriptionGuard;
-

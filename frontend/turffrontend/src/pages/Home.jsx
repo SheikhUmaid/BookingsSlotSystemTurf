@@ -6,6 +6,7 @@ import CuratedArenas from "../components/home/CuratedArenas";
 import LivePitchRadar from "../components/home/LivePitchRadar";
 import MatchFinder from "../components/home/MatchFinder";
 import LastPlayedBar from "../components/home/LastPlayedBar";
+import BuiltByZinth from "../components/shared/BuiltByZinth";
 
 // Placeholder session — connect to your API when available
 const DEMO_SESSION = {
@@ -30,6 +31,9 @@ function HomePage() {
             <LivePitchRadar />
             <MatchFinder />
             <LastPlayedBar lastSession={DEMO_LAST} />
+            <div className="px-4 pt-6 pb-2">
+                <BuiltByZinth />
+            </div>
         </div>
     );
 }

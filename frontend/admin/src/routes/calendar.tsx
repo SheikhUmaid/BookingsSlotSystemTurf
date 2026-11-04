@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { featurePage } from "@/components/turf/featurePage";
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { Ban, CheckCircle2, Clock, Plus, Sun, Sunset, Moon, CloudSun, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -10,10 +11,11 @@ import { cn } from "@/lib/utils";
 import { pageMeta } from "@/lib/meta";
 import { adminFetch } from "@/lib/api";
 import { useSubscription } from "@/lib/useSubscription";
+import { usePitches } from "@/lib/usePitches";
 
 export const Route = createFileRoute("/calendar")({
   head: () => pageMeta("Calendar & Availability", "Pick a date, see open turf slots and book a customer in seconds."),
-  component: CalendarPage,
+  component: featurePage("calendarManagement", "Calendar & Availability", CalendarPage),
 });
 
 const catIcon: Record<string, typeof Sun> = {
@@ -75,7 +77,7 @@ const to12 = (t?: string) => {
 
 function CalendarPage() {
   const { openBooking } = useStore();
-  const { isInactive, status } = useSubscription();
+  const { isInactive, status, manualBookingLocked } = useSubscription();
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
@@ -91,31 +93,25 @@ function CalendarPage() {
   const [date, setDate] = useState(todayStr);
   const [category, setCategory] = useState<"All" | SlotCategory>("All");
   const [filter, setFilter] = useState<Filter>("All");
-  const [pitch, setPitch] = useState<string>("Football Turf A");
+  const [pitch, setPitch] = useState<string>("");
 
-  // Fetch pitches/services to populate pitch dropdown
-  const { data: servicesData } = useQuery({
-    queryKey: ["admin-services-list"],
-    queryFn: () => adminFetch<{ services: Array<{ _id: string; name: string }> }>("/admin/services"),
-    enabled: isClient,
-  });
+  // Pitches: each time slot is bookable once per pitch per day
+  const { pitches } = usePitches();
 
-  const pitchOptions = useMemo(() => {
-    if (servicesData?.services && servicesData.services.length > 0) {
-      return servicesData.services.map((s) => s.name);
-    }
-    return ["Football Turf A", "Football Turf B"];
-  }, [servicesData]);
+  useEffect(() => {
+    const first = pitches[0];
+    if (!pitch && first) setPitch(first._id);
+  }, [pitch, pitches]);
 
-  // 1. Fetch month availability (slots are global across the venue)
+  // 1. Fetch month availability for the selected pitch
   const currentMonth = date ? date.slice(0, 7) : todayStr.slice(0, 7);
   const { data: monthData } = useQuery({
-    queryKey: ["admin-month-availability", currentMonth],
+    queryKey: ["admin-month-availability", currentMonth, pitch],
     queryFn: () =>
       adminFetch<MonthAvailabilityResponse>(
-        `/admin/time-slots/month-availability?month=${currentMonth}`
+        `/admin/time-slots/month-availability?month=${currentMonth}&pitch=${pitch}`
       ),
-    enabled: isClient,
+    enabled: isClient && !!pitch,
     staleTime: 30 * 1000,
   });
 
@@ -127,14 +123,14 @@ function CalendarPage() {
     [monthData, todayStr]
   );
 
-  // 2. Fetch daily time slot availability (global across all bookings)
+  // 2. Fetch daily time slot availability for the selected pitch
   const { data: availabilityData, isLoading: slotsLoading, isFetching } = useQuery({
-    queryKey: ["admin-time-slots-availability", date],
+    queryKey: ["admin-time-slots-availability", date, pitch],
     queryFn: () =>
       adminFetch<AvailabilityResponse>(
-        `/admin/time-slots/availability?date=${date}`
+        `/admin/time-slots/availability?date=${date}&pitch=${pitch}`
       ),
-    enabled: isClient && !!date,
+    enabled: isClient && !!date && !!pitch,
   });
 
   const isPast = date < todayStr;
@@ -162,7 +158,7 @@ function CalendarPage() {
         title="Calendar & Availability"
         desc="Select a date, then click an open slot to book a customer."
       />
-      <div className="grid gap-5 lg:grid-cols-[minmax(320px,35fr)_65fr]">
+      <div className="grid gap-5 xl:grid-cols-[minmax(320px,35fr)_65fr] lg:grid-cols-[320px_1fr]">
         {/* Left column: Month calendar & Mini stats */}
         <div className="space-y-4">
           <Panel className="p-4">
@@ -192,11 +188,13 @@ function CalendarPage() {
                 value={pitch}
                 onChange={(e) => setPitch(e.target.value)}
                 className={selectCls}
-                aria-label="Turf / Pitch"
+                aria-label="Pitch"
+                disabled={pitches.length === 0}
               >
-                {pitchOptions.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
+                {pitches.length === 0 && <option value="">No pitches configured</option>}
+                {pitches.map((p) => (
+                  <option key={p._id} value={p._id}>
+                    {p.name} · {p.size}
                   </option>
                 ))}
               </select>
@@ -254,12 +252,12 @@ function CalendarPage() {
                 const Icon = catIcon[s.category] || Sun;
                 const b = s.booking;
                 const pending = b?.status === "pending" || b?.status === "Pending";
-                const bookable = !s.is_booked && !isPast && !isInactive;
+                const bookable = !s.is_booked && !isPast && !manualBookingLocked;
                 return (
                   <div
                     key={s._id}
                     onClick={() => {
-                      if (bookable) openBooking({ date, slotId: s._id });
+                      if (bookable) openBooking({ date, slotId: s._id, pitchId: pitch });
                     }}
                     className={cn(
                       "group flex items-center justify-between gap-3 rounded-lg border p-3.5 text-left transition-all",
@@ -297,13 +295,13 @@ function CalendarPage() {
                       {bookable ? (
                         <button
                           type="button"
-                          disabled={isInactive}
+                          disabled={manualBookingLocked}
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (isInactive) return;
-                            openBooking({ date, slotId: s._id });
+                            if (manualBookingLocked) return;
+                            openBooking({ date, slotId: s._id, pitchId: pitch });
                           }}
-                          className="flex items-center gap-1 rounded bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 text-[11.5px] font-medium shadow-xs transition-colors"
+                          className="flex items-center gap-1 rounded bg-primary hover:bg-primary/90 text-primary-foreground px-2.5 py-1 text-[11.5px] font-medium shadow-xs transition-colors"
                         >
                           <Plus className="size-3" /> Book
                         </button>

@@ -1,12 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useCallback, useEffect } from "react";
-import { Eye, Search, Loader2 } from "lucide-react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { Eye, Search, Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { inr, to12 } from "@/lib/turf-data";
 import { PageHeader, Panel, StatusBadge, Td, Th, selectCls } from "@/components/turf/ui-bits";
 import { pageMeta } from "@/lib/meta";
 import { adminFetch } from "@/lib/api";
+import { usePitches } from "@/lib/usePitches";
+import { useSubscription } from "@/lib/useSubscription";
 
 export const Route = createFileRoute("/bookings")({
   head: () => pageMeta("Bookings", "Search, filter and review every turf booking."),
@@ -29,6 +43,13 @@ interface ApiService {
   icon?: string;
 }
 
+interface ApiPitch {
+  _id: string;
+  name: string;
+  size?: string;
+  description?: string;
+}
+
 interface ApiTimeSlot {
   start_time: string; // "HH:MM"
   end_time: string;
@@ -39,6 +60,7 @@ export interface ApiBooking {
   booking_ref: string;
   customer: ApiCustomer;
   service: ApiService;
+  pitch?: ApiPitch | null;
   time_slots: ApiTimeSlot[];
   date: string; // ISO date string
   status: string; // "pending" | "partial" | "paid" | "cancelled" | "expired"
@@ -85,9 +107,14 @@ function BookingsPage() {
   const [q, setQ] = useState("");
   const [date, setDate] = useState("");
   const [service, setService] = useState("");
+  const [pitch, setPitch] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState<ApiBooking | null>(null);
+  const [deletingBooking, setDeletingBooking] = useState<ApiBooking | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const queryClient = useQueryClient();
+  const { isInactive } = useSubscription();
 
   // Accumulate rows across pages for "Load more"
   const [allRows, setAllRows] = useState<ApiBooking[]>([]);
@@ -101,12 +128,14 @@ function BookingsPage() {
     staleTime: 5 * 60 * 1000,
   });
   const serviceOptions = Array.isArray(servicesData) ? servicesData : (servicesData?.services ?? []);
+  const { pitches: pitchOptions } = usePitches();
 
   // ── Fetch bookings ─────────────────────────────────────────────────────────
   const params = new URLSearchParams({
     ...(q ? { search: q } : {}),
     ...(date ? { date } : {}),
     ...(service ? { service } : {}),
+    ...(pitch ? { pitch } : {}),
     ...(status ? { status: status.toLowerCase() } : {}),
     page: String(page),
     limit: String(LIMIT),
@@ -115,7 +144,7 @@ function BookingsPage() {
   });
 
   const { data, isLoading, isFetching, isError, error } = useQuery({
-    queryKey: ["admin-bookings", q, date, service, status, page],
+    queryKey: ["admin-bookings", q, date, service, pitch, status, page],
     queryFn: async () => {
       const result = await adminFetch<BookingsListResponse>(`/admin/bookings?${params}`);
       // Merge new page results into allRows
@@ -149,6 +178,29 @@ function BookingsPage() {
   });
   const detail = detailData?.booking ?? open;
 
+  // ── Delete ─────────────────────────────────────────────────────────────────
+  const confirmDelete = async () => {
+    if (!deletingBooking) return;
+    setDeleting(true);
+    try {
+      await adminFetch<{ message: string }>(`/admin/bookings/${deletingBooking._id}`, {
+        method: "DELETE",
+      });
+      toast.success(`Booking ${deletingBooking.booking_ref} deleted`);
+      setAllRows((prev) => prev.filter((b) => b._id !== deletingBooking._id));
+      if (open?._id === deletingBooking._id) setOpen(null);
+      setDeletingBooking(null);
+      // Freed slots must show as open again in calendar / availability
+      queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-time-slots-availability"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-month-availability"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete booking");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -178,10 +230,22 @@ function BookingsPage() {
             onChange={(e) => resetAndFilter(() => setService(e.target.value))}
             className={selectCls}
           >
-            <option value="">All pitches</option>
+            <option value="">All sports</option>
             {serviceOptions.map((s) => (
               <option key={s._id} value={s._id}>
                 {s.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={pitch}
+            onChange={(e) => resetAndFilter(() => setPitch(e.target.value))}
+            className={selectCls}
+          >
+            <option value="">All pitches</option>
+            {pitchOptions.map((p) => (
+              <option key={p._id} value={p._id}>
+                {p.name}
               </option>
             ))}
           </select>
@@ -195,13 +259,14 @@ function BookingsPage() {
               <option key={s}>{s}</option>
             ))}
           </select>
-          {(q || date || service || status) && (
+          {(q || date || service || pitch || status) && (
             <button
               onClick={() =>
                 resetAndFilter(() => {
                   setQ("");
                   setDate("");
                   setService("");
+                  setPitch("");
                   setStatus("");
                 })
               }
@@ -230,6 +295,7 @@ function BookingsPage() {
               <tr>
                 <Th>Booking ID</Th>
                 <Th>Customer</Th>
+                <Th>Sport</Th>
                 <Th>Pitch</Th>
                 <Th>Date</Th>
                 <Th>Time slots</Th>
@@ -244,7 +310,7 @@ function BookingsPage() {
               {isLoading && allRows.length === 0
                 ? Array.from({ length: 8 }).map((_, i) => (
                     <tr key={i}>
-                      {Array.from({ length: 10 }).map((_, j) => (
+                      {Array.from({ length: 11 }).map((_, j) => (
                         <Td key={j}>
                           <div className="h-3 animate-pulse rounded bg-muted" />
                         </Td>
@@ -265,6 +331,7 @@ function BookingsPage() {
                         </div>
                       </Td>
                       <Td>{b.service?.name ?? "—"}</Td>
+                      <Td>{b.pitch?.name ?? "—"}</Td>
                       <Td>{fmtBookingDate(b.date)}</Td>
                       <Td className="text-muted-foreground">
                         {b.time_slots?.length ? slotLabel(b.time_slots) : "—"}
@@ -278,7 +345,21 @@ function BookingsPage() {
                         <StatusBadge status={capitalize(b.payment_type ?? "")} />
                       </Td>
                       <Td>
-                        <Eye className="size-4 text-muted-foreground" />
+                        <div className="flex items-center gap-1">
+                          <Eye className="size-4 text-muted-foreground" />
+                          <button
+                            type="button"
+                            title={isInactive ? "Account inactive (read only)" : "Delete booking"}
+                            disabled={isInactive}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingBooking(b);
+                            }}
+                            className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-danger-soft hover:text-destructive disabled:opacity-40 disabled:hover:bg-transparent"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </div>
                       </Td>
                     </tr>
                   ))}
@@ -307,7 +388,7 @@ function BookingsPage() {
 
       {/* Detail sheet */}
       <Sheet open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
-        <SheetContent className="w-[380px] sm:max-w-[380px]">
+        <SheetContent className="w-full overflow-y-auto sm:w-[380px] sm:max-w-[380px]">
           {open && (
             <>
               <SheetHeader>
@@ -331,7 +412,8 @@ function BookingsPage() {
                   <Section
                     title="Booking"
                     rows={[
-                      ["Pitch", detail.service?.name ?? "—"],
+                      ["Sport", detail.service?.name ?? "—"],
+                      ["Pitch", detail.pitch ? `${detail.pitch.name}${detail.pitch.size ? ` · ${detail.pitch.size}` : ""}` : "—"],
                       ["Date", fmtBookingDate(detail.date)],
                       ["Slots", detail.time_slots?.length ? slotLabel(detail.time_slots) : "—"],
                     ]}
@@ -347,12 +429,58 @@ function BookingsPage() {
                       ["Payment ID", detail.payment_id ?? "—"],
                     ]}
                   />
+                  <Button
+                    variant="outline"
+                    disabled={isInactive}
+                    onClick={() => setDeletingBooking(open)}
+                    className="w-full border-destructive/30 text-destructive hover:bg-danger-soft hover:text-destructive"
+                  >
+                    <Trash2 className="mr-1.5 size-4" /> Delete booking
+                  </Button>
                 </div>
               ) : null}
             </>
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Delete confirmation */}
+      <AlertDialog
+        open={!!deletingBooking}
+        onOpenChange={(o) => !o && !deleting && setDeletingBooking(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete booking</AlertDialogTitle>
+            <AlertDialogDescription>
+              Permanently delete{" "}
+              <span className="font-semibold text-foreground">{deletingBooking?.booking_ref}</span>
+              {deletingBooking?.customer?.name ? ` for ${deletingBooking.customer.name}` : ""}? Its
+              time slots will become available again. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                confirmDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-1.5 size-4 animate-spin" />
+                  Deleting…
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

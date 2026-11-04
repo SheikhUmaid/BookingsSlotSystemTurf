@@ -9,6 +9,7 @@ export default function CheckoutBar({
     onDetailsClick,
     onProceed,
     isProcessing = false,
+    disabled = false,
 }) {
     const total = useMemo(() => slotPrice + fee, [slotPrice, fee]);
 
@@ -46,11 +47,11 @@ export default function CheckoutBar({
                     <button
                         type="button"
                         onClick={onProceed}
-                        disabled={isProcessing}
-                        className="shrink-0 px-5 py-2.5 rounded-xl bg-primary hover:bg-[#3ec470] active:scale-95 text-on-primary font-headline-sm text-xs font-bold tracking-wide flex items-center gap-1.5 shadow-sm transition-all disabled:opacity-80"
+                        disabled={isProcessing || disabled}
+                        className="shrink-0 px-5 py-2.5 rounded-xl bg-primary hover:bg-[#3ec470] active:scale-95 text-on-primary font-headline-sm text-xs font-bold tracking-wide flex items-center gap-1.5 shadow-sm transition-all disabled:opacity-80 disabled:cursor-not-allowed"
                     >
                         <span>
-                            {isProcessing ? "Securing Slot..." : "Proceed to Payment"}
+                            {disabled ? "Booking Unavailable" : isProcessing ? "Securing Slot..." : "Proceed to Payment"}
                         </span>
 
                         <span className="material-symbols-outlined text-[16px]">

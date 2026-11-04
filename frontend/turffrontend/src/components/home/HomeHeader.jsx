@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Bell, User } from "lucide-react";
 import LoginModal from "../shared/LoginModal";
 import { useAuth } from "../../services/auth.service";
+import { useVenue } from "../../hooks/useVenue";
 
 export default function HomeHeader() {
     const { isAuthenticated } = useAuth();
     const [loginOpen, setLoginOpen] = useState(false);
+    const { venue, venueName } = useVenue();
 
     return (
         <>
@@ -19,11 +21,13 @@ export default function HomeHeader() {
                     </div>
                     <div>
                         <p className="font-['Space_Grotesk'] text-[11px] font-bold uppercase tracking-[0.18em] text-white leading-tight">
-                            Strikers Yard
+                            {venueName}
                         </p>
-                        <p className="font-['Hanken_Grotesk'] text-[10px] text-on-surface-variant leading-tight">
-                            Downtown Arena Pitch
-                        </p>
+                        {(venue?.tagline || venue?.city) && (
+                            <p className="font-['Hanken_Grotesk'] text-[10px] text-on-surface-variant leading-tight">
+                                {venue.tagline || venue.city}
+                            </p>
+                        )}
                     </div>
                 </div>
 
