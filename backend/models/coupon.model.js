@@ -34,6 +34,13 @@ const couponSchema = new mongoose.Schema(
             type: Number,
             default: null // null means unlimited usage
         },
+        // How many times ONE customer account may use this coupon
+        // (1 = once per customer). null = no per-customer limit.
+        per_user_limit: {
+            type: Number,
+            default: null,
+            min: 1
+        },
         used_count: {
             type: Number,
             default: 0

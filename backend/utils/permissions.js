@@ -15,6 +15,11 @@ export const STAFF_AREAS = [
     "pitches",
     "coupons",
     "reports",
+    "customers",
+    "payments",
+    "recurring",
+    "expenses",
+    "maintenance",
 ];
 
 export const DEFAULT_STAFF_PERMISSIONS = ["dashboard", "bookings", "calendar"];

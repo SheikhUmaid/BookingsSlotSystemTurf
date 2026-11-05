@@ -38,6 +38,9 @@ interface BusinessSettings {
 type SettingsFromApi = Omit<BusinessSettings, "latitude" | "longitude"> & {
   latitude: number | null;
   longitude: number | null;
+  crm_high_value_threshold?: number;
+  crm_inactive_days?: number;
+  crm_regular_min_bookings?: number;
 };
 
 interface SettingsResponse {
@@ -440,6 +443,9 @@ function SettingsPage() {
         </div>
       </Panel>
 
+      {/* Customer categories (CRM) */}
+      <CrmThresholdsPanel settings={data?.settings} disabled={isLoading || isInactive} />
+
       {/* Change Password Panel */}
       <Panel>
         <PanelHead
@@ -593,5 +599,67 @@ function SettingsPage() {
         </div>
       </Panel>
     </div>
+  );
+}
+
+function CrmThresholdsPanel({ settings, disabled }: { settings?: SettingsFromApi | undefined; disabled: boolean }) {
+  const queryClient = useQueryClient();
+  const [f, setF] = useState({ high: "10000", inactive: "45", regular: "4" });
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    if (settings) {
+      setF({
+        high: String(settings.crm_high_value_threshold ?? 10000),
+        inactive: String(settings.crm_inactive_days ?? 45),
+        regular: String(settings.crm_regular_min_bookings ?? 4),
+      });
+    }
+  }, [settings]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await adminFetch("/admin/settings", {
+        method: "PATCH",
+        body: JSON.stringify({
+          crm_high_value_threshold: Number(f.high),
+          crm_inactive_days: Number(f.inactive),
+          crm_regular_min_bookings: Number(f.regular),
+        }),
+      });
+      toast.success("Customer categories updated");
+      queryClient.invalidateQueries({ queryKey: ["admin-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-customers"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Panel>
+      <PanelHead title="Customer categories" />
+      <div className="grid gap-4 p-4 sm:grid-cols-3">
+        <div className="space-y-1.5">
+          <Label className="text-[12.5px]">High-Value: total spent at least (₹)</Label>
+          <Input type="number" min={0} value={f.high} onChange={(e) => setF({ ...f, high: e.target.value })} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-[12.5px]">Regular: bookings in last 90 days</Label>
+          <Input type="number" min={2} max={100} value={f.regular} onChange={(e) => setF({ ...f, regular: e.target.value })} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-[12.5px]">Inactive: no booking for (days)</Label>
+          <Input type="number" min={7} max={365} value={f.inactive} onChange={(e) => setF({ ...f, inactive: e.target.value })} />
+        </div>
+      </div>
+      <div className="flex items-center justify-between border-t p-3">
+        <p className="text-[12px] text-muted-foreground">Used on the Customers page. Anyone not Regular or Inactive counts as New.</p>
+        <Button onClick={save} disabled={saving || disabled}>
+          {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}Save
+        </Button>
+      </div>
+    </Panel>
   );
 }

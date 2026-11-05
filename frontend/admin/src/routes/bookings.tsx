@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useCallback, useEffect } from "react";
-import { Eye, Search, Loader2, Trash2 } from "lucide-react";
+import { Ban, Eye, Search, Loader2, Trash2 } from "lucide-react";
+import { BookingPayments } from "@/components/turf/BookingPayments";
+import { useInvalidateMoney } from "@/lib/useInvalidateMoney";
 import { toast } from "sonner";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import {
@@ -115,6 +117,28 @@ function BookingsPage() {
   const [deleting, setDeleting] = useState(false);
   const queryClient = useQueryClient();
   const { isInactive } = useSubscription();
+  const invalidateMoney = useInvalidateMoney();
+  const [cancelling, setCancelling] = useState(false);
+
+  const cancelOpenBooking = async () => {
+    if (!open) return;
+    setCancelling(true);
+    try {
+      const res = await adminFetch<{ message: string }>(`/admin/bookings/${open._id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: "cancelled" }),
+      });
+      toast.success(res.message);
+      invalidateMoney();
+      queryClient.invalidateQueries({ queryKey: ["admin-time-slots-availability"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-month-availability"] });
+      setOpen((o) => (o ? { ...o, status: "cancelled" } : o));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to cancel booking");
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   // Accumulate rows across pages for "Load more"
   const [allRows, setAllRows] = useState<ApiBooking[]>([]);
@@ -388,7 +412,7 @@ function BookingsPage() {
 
       {/* Detail sheet */}
       <Sheet open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
-        <SheetContent className="w-full overflow-y-auto sm:w-[380px] sm:max-w-[380px]">
+        <SheetContent className="w-full overflow-y-auto sm:w-[420px] sm:max-w-[420px]">
           {open && (
             <>
               <SheetHeader>
@@ -418,17 +442,30 @@ function BookingsPage() {
                       ["Slots", detail.time_slots?.length ? slotLabel(detail.time_slots) : "—"],
                     ]}
                   />
-                  <Section
-                    title="Payment"
-                    rows={[
-                      ["Total payable", inr(detail.total_payable)],
-                      ["Amount paid", inr(detail.amount_paid)],
-                      ["Balance", inr(detail.total_payable - detail.amount_paid)],
-                      ["Type", capitalize(detail.payment_type ?? "")],
-                      ["Order ID", detail.payment_order_id ?? "—"],
-                      ["Payment ID", detail.payment_id ?? "—"],
-                    ]}
+                  <BookingPayments
+                    bookingId={detail._id}
+                    bookingStatus={detail.status}
                   />
+                  {detail.payment_order_id && (
+                    <Section
+                      title="Razorpay"
+                      rows={[
+                        ["Order ID", detail.payment_order_id ?? "—"],
+                        ["Payment ID", detail.payment_id ?? "—"],
+                      ]}
+                    />
+                  )}
+                  {!["cancelled", "expired"].includes(detail.status) && (
+                    <Button
+                      variant="outline"
+                      disabled={isInactive || cancelling}
+                      onClick={cancelOpenBooking}
+                      className="w-full"
+                    >
+                      {cancelling ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : <Ban className="mr-1.5 size-4" />}
+                      Cancel booking (frees the slot)
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     disabled={isInactive}

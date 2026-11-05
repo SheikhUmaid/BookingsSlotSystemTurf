@@ -80,6 +80,14 @@ export const updateSettings = async (req, res) => {
         if (allow_partial_payments !== undefined) settings.allow_partial_payments = Boolean(allow_partial_payments);
         if (sms_confirmation !== undefined) settings.sms_confirmation = Boolean(sms_confirmation);
         if (daily_summary_email !== undefined) settings.daily_summary_email = Boolean(daily_summary_email);
+
+        // CRM category thresholds (validated by the schema min/max)
+        for (const key of ["crm_high_value_threshold", "crm_inactive_days", "crm_regular_min_bookings"]) {
+            if (req.body[key] === undefined) continue;
+            const n = Number(req.body[key]);
+            if (!Number.isFinite(n)) return res.status(400).json({ message: `${key} must be a number.` });
+            settings[key] = n;
+        }
         if (tagline !== undefined) settings.tagline = String(tagline).trim();
         if (landmark !== undefined) settings.landmark = String(landmark).trim();
         if (pincode !== undefined) settings.pincode = String(pincode).trim();
@@ -91,7 +99,12 @@ export const updateSettings = async (req, res) => {
             return res.status(400).json({ message: "Enter both latitude and longitude, or leave both empty." });
         }
 
-        await settings.save();
+        try {
+            await settings.save();
+        } catch (err) {
+            if (err?.name === "ValidationError") return res.status(400).json({ message: err.message });
+            throw err;
+        }
 
         return res.status(200).json({
             message: "Settings updated successfully.",

@@ -23,6 +23,12 @@ import {
   BarChart3,
   Users,
   Sparkles,
+  Contact,
+  Wallet,
+  Repeat,
+  Receipt,
+  ClipboardList,
+  Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,26 +57,35 @@ type NavItem = {
   adminOnly?: boolean;
   /** Shown with a lock + "Upgrade" tag unless at least one of these features is on. */
   features?: FeatureKey[];
+  /** Sidebar section heading */
+  group: "Operations" | "Customers" | "Money" | "Setup";
 };
 
 const nav: NavItem[] = [
-  { to: "/", label: "Overview", icon: LayoutDashboard, area: "dashboard", features: ["basicAnalytics"] },
-  { to: "/bookings", label: "Bookings", icon: ListChecks, area: "bookings" },
-  { to: "/calendar", label: "Calendar & Availability", icon: CalendarDays, area: "calendar", features: ["calendarManagement"] },
-  { to: "/services", label: "Services", icon: Layers, area: "services" },
-  { to: "/pitches", label: "Pitches", icon: LandPlot, area: "pitches" },
-  { to: "/pricing", label: "Time Slots & Pricing", icon: Clock, area: "pricing" },
-  { to: "/coupons", label: "Coupons", icon: Ticket, area: "coupons", features: ["coupons"] },
+  { to: "/", label: "Overview", icon: LayoutDashboard, area: "dashboard", features: ["basicAnalytics"], group: "Operations" },
+  { to: "/bookings", label: "Bookings", icon: ListChecks, area: "bookings", group: "Operations" },
+  { to: "/calendar", label: "Calendar & Availability", icon: CalendarDays, area: "calendar", features: ["calendarManagement"], group: "Operations" },
+  { to: "/recurring", label: "Recurring Bookings", icon: Repeat, area: "recurring", features: ["manualBookings"], group: "Operations" },
+  { to: "/maintenance", label: "Maintenance", icon: Wrench, area: "maintenance", group: "Operations" },
+  { to: "/customers", label: "Customers", icon: Contact, area: "customers", group: "Customers" },
+  { to: "/coupons", label: "Coupons", icon: Ticket, area: "coupons", features: ["coupons"], group: "Customers" },
+  { to: "/daily-report", label: "Daily Report", icon: ClipboardList, area: "reports", group: "Money" },
+  { to: "/payments", label: "Payments", icon: Wallet, area: "payments", group: "Money" },
+  { to: "/expenses", label: "Expenses", icon: Receipt, area: "expenses", group: "Money" },
   {
     to: "/reports",
     label: "Reports",
     icon: BarChart3,
     area: "reports",
     features: ["advancedAnalytics", "leaderboards", "pitchWiseReports", "financialExports"],
+    group: "Money",
   },
-  { to: "/team", label: "Team", icon: Users, adminOnly: true },
-  { to: "/subscription", label: "Subscription", icon: CreditCard, adminOnly: true },
-  { to: "/settings", label: "Settings", icon: Settings, adminOnly: true },
+  { to: "/services", label: "Services", icon: Layers, area: "services", group: "Setup" },
+  { to: "/pitches", label: "Pitches", icon: LandPlot, area: "pitches", group: "Setup" },
+  { to: "/pricing", label: "Time Slots & Pricing", icon: Clock, area: "pricing", group: "Setup" },
+  { to: "/team", label: "Team", icon: Users, adminOnly: true, group: "Setup" },
+  { to: "/subscription", label: "Subscription", icon: CreditCard, adminOnly: true, group: "Setup" },
+  { to: "/settings", label: "Settings", icon: Settings, adminOnly: true, group: "Setup" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -307,16 +322,22 @@ function SidebarBody({
         <ProductLockup />
       </div>
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-2.5">
-        {nav.filter(allowed).map((n) => {
+        {nav.filter(allowed).map((n, i, list) => {
           const active = n.to === path;
+          const heading = i === 0 || list[i - 1]!.group !== n.group ? n.group : null;
           const locked = !!n.features && !n.features.some((f) => hasFeature(f));
           return (
+            <div key={n.to}>
+            {heading && (
+              <div className="px-2.5 pb-1 pt-3 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground/80 first:pt-1">
+                {heading}
+              </div>
+            )}
             <Link
-              key={n.to}
               to={n.to}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-sidebar-foreground transition-colors hover:bg-secondary",
+                "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] font-medium text-sidebar-foreground transition-colors hover:bg-secondary",
                 active &&
                   "relative bg-sidebar-accent before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-full before:bg-primary text-sidebar-accent-foreground hover:bg-sidebar-accent",
               )}
@@ -332,6 +353,7 @@ function SidebarBody({
                 />
               )}
             </Link>
+            </div>
           );
         })}
       </nav>

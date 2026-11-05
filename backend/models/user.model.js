@@ -32,6 +32,9 @@ const userSchema = mongoose.Schema({
 })
 
 
+userSchema.index({ phone: 1 });
+userSchema.index({ role: 1, name: 1 });
+
 const User = mongoose.model("User", userSchema);
 
 export default User;

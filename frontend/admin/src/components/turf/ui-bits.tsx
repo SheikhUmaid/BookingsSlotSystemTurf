@@ -14,6 +14,15 @@ const statusStyles: Record<string, string> = {
   Cancelled: "bg-danger-soft text-destructive border-destructive/20",
   Expired: "bg-secondary text-muted-foreground border-border",
   Inactive: "bg-secondary text-muted-foreground border-border",
+  Unpaid: "bg-warning-soft text-warning border-warning/30",
+  "Partly paid": "bg-warning-soft text-warning border-warning/30",
+  Refunded: "bg-danger-soft text-destructive border-destructive/20",
+  Scheduled: "bg-warning-soft text-warning border-warning/30",
+  "In progress": "bg-primary-soft text-primary-soft-foreground border-primary/20",
+  Completed: "bg-success-soft text-success border-success/20",
+  New: "bg-primary-soft text-primary-soft-foreground border-primary/20",
+  Regular: "bg-success-soft text-success border-success/20",
+  "High-Value": "bg-warning-soft text-warning border-warning/30",
 };
 
 export function StatusBadge({ status }: { status: BookingStatus | string }) {

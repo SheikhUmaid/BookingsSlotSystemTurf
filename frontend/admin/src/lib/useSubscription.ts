@@ -35,7 +35,12 @@ export type StaffArea =
   | "services"
   | "pitches"
   | "coupons"
-  | "reports";
+  | "reports"
+  | "customers"
+  | "payments"
+  | "recurring"
+  | "expenses"
+  | "maintenance";
 
 export interface Plan {
   code: string | null;

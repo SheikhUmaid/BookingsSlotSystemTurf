@@ -1,4 +1,7 @@
 import Coupon from "../models/coupon.model.js";
+import User from "../models/user.model.js";
+import jwt from "jsonwebtoken";
+import { customerCouponUses, perUserLimitMessage } from "../utils/coupons.js";
 
 
 
@@ -44,6 +47,19 @@ const createCoupon = async (req, res) => {
 
 
 
+/** User id from a valid bearer token, or null (this endpoint also works signed-out). */
+async function optionalUserId(req) {
+    try {
+        const token = req.headers.authorization?.split(" ")[1];
+        if (!token) return null;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id).select("accessToken").lean();
+        return user && user.accessToken === token ? user._id : null;
+    } catch {
+        return null;
+    }
+}
+
 const verifyCoupon = async (req,res)=>{
     try{
         const {code} = req.params;
@@ -52,13 +68,27 @@ const verifyCoupon = async (req,res)=>{
             return res.status(400).json({ message: "Invalid coupon code." });
         }
         
-        const data = await Coupon.findOne({ code }).select("-_id -__v -createdAt -updatedAt -valid_from -valid_until -usage_limit -used_count ");
+        const coupon = await Coupon.findOne({ code }).lean();
 
-        if (!data) {
+        if (!coupon) {
             return res.status(404).json({ message: "Coupon not found." });
         }
-        
-        return res.status(200).json(data);
+
+        // If the customer is signed in, tell them now when they've used up their allowance
+        // (the booking endpoint enforces this regardless).
+        if (coupon.per_user_limit) {
+            const userId = await optionalUserId(req);
+            if (userId && (await customerCouponUses(coupon._id, userId)) >= coupon.per_user_limit) {
+                return res.status(409).json({ message: perUserLimitMessage(coupon.per_user_limit) });
+            }
+        }
+
+        return res.status(200).json({
+            code: coupon.code,
+            discount_percentage: coupon.discount_percentage,
+            active: coupon.active,
+            per_user_limit: coupon.per_user_limit ?? null,
+        });
 
     }catch(err){
         console.error("Error verifying coupon:", err);

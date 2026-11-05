@@ -67,6 +67,13 @@ const settingSchema = new mongoose.Schema(
             min: -180,
             max: 180,
         },
+        // --- CRM customer categories (owner-adjustable) ---
+        // High-Value: total spent ≥ this many rupees
+        crm_high_value_threshold: { type: Number, default: 10000, min: 0 },
+        // Inactive: no booking in this many days
+        crm_inactive_days: { type: Number, default: 45, min: 7, max: 365 },
+        // Regular: at least this many bookings in the last 90 days
+        crm_regular_min_bookings: { type: Number, default: 4, min: 2, max: 100 },
         allow_partial_payments: {
             type: Boolean,
             default: true,

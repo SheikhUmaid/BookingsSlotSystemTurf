@@ -3,7 +3,12 @@ import User from "../../models/user.model.js";
 import Service from "../../models/service.model.js";
 import TimeSlot from "../../models/time_slot.model.js";
 import Pitch from "../../models/pitch.model.js";
-import { pitchOccupancyFilter } from "../../utils/pitch_conflict.js";
+import { INACTIVE_BOOKING_STATUSES, activeBookingFilter, pitchOccupancyFilter } from "../../utils/pitch_conflict.js";
+import { findMaintenanceConflict, maintenanceMessage } from "../../utils/maintenance.js";
+import Payment, { PAYMENT_METHODS } from "../../models/payment.model.js";
+import { paymentStatusOf } from "../../services/payments.service.js";
+import { cancelBooking } from "../../services/bookings.service.js";
+import { runInTransaction, withSession } from "../../utils/db.js";
 import mongoose from "mongoose";
 
 // ---------------------------------------------------------------------------
@@ -199,6 +204,10 @@ export const getAllBookings = async (req, res) => {
             payment_type: b.payment_type,
             payment_id: b.payment_id ?? null,
             payment_order_id: b.payment_order_id ?? null,
+            amount_refunded: b.amount_refunded || 0,
+            payment_status: paymentStatusOf(b),
+            source: b.source ?? null,
+            recurring: b.recurring ?? null,
             expires_at: b.expires_at,
             createdAt: b.createdAt,
             updatedAt: b.updatedAt,
@@ -273,18 +282,56 @@ export const updateBookingStatus = async (req, res) => {
             });
         }
 
+        if (status === "cancelled") {
+            // Frees the slot; money stays until refunded.
+            const { booking } = await cancelBooking(bookingId);
+            await booking.populate([{ path: "user", select: "name phone" }, { path: "service", select: "name" }]);
+            return res.status(200).json({
+                message: `Booking cancelled.${booking.amount_paid > 0 ? ` ₹${booking.amount_paid} was collected — record a refund if you're returning it.` : ""}`,
+                booking,
+            });
+        }
+
+        // Paid / partial / pending must match the money actually recorded,
+        // otherwise reports and the payment ledger would disagree.
+        const current = await Booking.findById(bookingId).populate("time_slots", "start_time end_time").lean();
+        if (!current) return res.status(404).json({ message: "Booking not found." });
+        const moneyStatus =
+            current.total_payable > 0 && current.amount_paid >= current.total_payable
+                ? "paid"
+                : current.amount_paid > 0
+                  ? "partial"
+                  : "pending";
+        if (status !== moneyStatus) {
+            return res.status(409).json({
+                message: status === "paid" || status === "partial"
+                    ? "Use “Record payment” to mark money as received — the status updates automatically."
+                    : `This booking has ₹${current.amount_paid} recorded, so its status is "${moneyStatus}".`,
+            });
+        }
+
+        // Re-opening a cancelled/expired booking: the slot must still be free.
+        if (INACTIVE_BOOKING_STATUSES.includes(current.status)) {
+            const clash = await Booking.findOne({
+                _id: { $ne: current._id },
+                date: current.date,
+                time_slots: { $in: current.time_slots.map((s) => s._id) },
+                ...activeBookingFilter(),
+                ...pitchOccupancyFilter(current.pitch),
+            }).lean();
+            if (clash) return res.status(409).json({ message: "That slot has been booked by someone else since this booking was cancelled." });
+            const m = current.pitch ? await findMaintenanceConflict(current.pitch, current.date, current.time_slots) : null;
+            if (m) return res.status(409).json({ message: maintenanceMessage(m) });
+        }
+
         const booking = await Booking.findByIdAndUpdate(
             bookingId,
-            { $set: { status } },
+            { $set: { status, ...(current.status === "expired" ? { expires_at: new Date(Date.now() + 365 * 864e5) } : {}) } },
             { new: true, runValidators: true }
         )
             .populate({ path: "user", select: "name phone" })
             .populate({ path: "service", select: "name" })
             .lean();
-
-        if (!booking) {
-            return res.status(404).json({ message: "Booking not found." });
-        }
 
         return res.status(200).json({
             message: `Booking status updated to "${status}".`,
@@ -292,7 +339,7 @@ export const updateBookingStatus = async (req, res) => {
         });
     } catch (error) {
         console.error("Admin updateBookingStatus error:", error);
-        return res.status(500).json({ message: "Failed to update booking status." });
+        return res.status(error.status || 500).json({ message: error.status ? error.message : "Failed to update booking status." });
     }
 };
 
@@ -392,6 +439,8 @@ export const createAdminBooking = async (req, res) => {
             status = "paid",
             payment_type = "full",
             amount_paid,
+            payment_method = "cash",
+            payment_reference,
         } = req.body;
 
         // 1. Validate customer name & phone
@@ -451,7 +500,7 @@ export const createAdminBooking = async (req, res) => {
         const conflict = await Booking.findOne({
             date: { $gte: startDate, $lt: endDate },
             time_slots: { $in: slotIds },
-            status: { $ne: "cancelled" },
+            ...activeBookingFilter(),
             ...pitchOccupancyFilter(pitch),
         });
 
@@ -459,6 +508,11 @@ export const createAdminBooking = async (req, res) => {
             return res.status(409).json({
                 message: "This slot is already booked on this pitch for this date. Please choose another slot or pitch.",
             });
+        }
+
+        const maintenance = await findMaintenanceConflict(pitch, startDate, slots);
+        if (maintenance) {
+            return res.status(409).json({ message: maintenanceMessage(maintenance) });
         }
 
         // 6. Find or create user
@@ -480,10 +534,18 @@ export const createAdminBooking = async (req, res) => {
         const totalPayable = slots.reduce((acc, s) => acc + (s.price || 0), 0);
         const resolvedPaid =
             typeof amount_paid === "number"
-                ? amount_paid
+                ? Math.round(amount_paid * 100) / 100
                 : status === "paid"
                 ? totalPayable
                 : 0;
+        if (!Number.isFinite(resolvedPaid) || resolvedPaid < 0 || resolvedPaid > totalPayable) {
+            return res.status(400).json({ message: `Amount paid must be between ₹0 and ₹${totalPayable}.` });
+        }
+        if (resolvedPaid > 0 && (!PAYMENT_METHODS.includes(payment_method) || payment_method === "online")) {
+            return res.status(400).json({ message: "Choose how the customer paid: cash, UPI, card, bank transfer or other." });
+        }
+        // Status always follows the money actually received
+        const resolvedStatus = resolvedPaid >= totalPayable && totalPayable > 0 ? "paid" : resolvedPaid > 0 ? "partial" : "pending";
 
         const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year for admin bookings
 
@@ -495,12 +557,37 @@ export const createAdminBooking = async (req, res) => {
             date: startDate,
             total_payable: totalPayable,
             amount_paid: resolvedPaid,
-            payment_type: payment_type === "partial" ? "partial" : "full",
-            status: ["pending", "partial", "paid"].includes(status) ? status : "paid",
+            payment_type: resolvedStatus === "partial" || payment_type === "partial" ? "partial" : "full",
+            status: resolvedStatus,
+            source: "admin",
             expires_at: expiresAt,
         });
 
-        await newBooking.save();
+        // Booking + its payment ledger row are written together
+        await runInTransaction(async (session) => {
+            await newBooking.save(withSession(session));
+            if (resolvedPaid > 0) {
+                try {
+                    await Payment.create(
+                        [{
+                            booking: newBooking._id,
+                            user: user._id,
+                            kind: "payment",
+                            amount: resolvedPaid,
+                            method: payment_method,
+                            source: "admin",
+                            reference: typeof payment_reference === "string" && payment_reference.trim() ? payment_reference.trim() : null,
+                            recordedBy: req.user?._id ?? null,
+                            paidAt: new Date(),
+                        }],
+                        withSession(session)
+                    );
+                } catch (err) {
+                    if (!session) await Booking.deleteOne({ _id: newBooking._id });
+                    throw err;
+                }
+            }
+        });
 
         await newBooking.populate([
             { path: "user", select: "name phone email" },
@@ -546,6 +633,13 @@ export const deleteBooking = async (req, res) => {
 
         if (!mongoose.Types.ObjectId.isValid(bookingId)) {
             return res.status(400).json({ message: "Invalid booking ID." });
+        }
+
+        // Bookings with money recorded can't be deleted — the payment trail must stay.
+        if (await Payment.exists({ booking: bookingId })) {
+            return res.status(409).json({
+                message: "This booking has payments recorded, so it can't be deleted. Cancel it instead (and record a refund if you return the money).",
+            });
         }
 
         const booking = await Booking.findByIdAndDelete(bookingId).lean();

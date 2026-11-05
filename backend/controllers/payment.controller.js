@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Booking from "../models/booking.model.js";
 import razorpay from "../config/razorpay.config.js";
 import crypto from "node:crypto";
+import { recordGatewayPayment } from "../services/payments.service.js";
 
 
 const PARTIAL_PAYMENT_PERCENT = Number(
@@ -306,7 +307,7 @@ export const razorpayWebhook = async (req, res) => {
     const amountPaidRupees = payment.amount / 100;
 
     booking.payment_id = payment.id;
-    booking.amount_paid = amountPaidRupees;
+    booking.amount_paid = Math.round(((booking.amount_paid || 0) + amountPaidRupees) * 100) / 100;
 
     console.log(10);
 
@@ -317,8 +318,14 @@ export const razorpayWebhook = async (req, res) => {
       booking.status = "partial";
     }
 
-    // 10. Persist the updated booking
+    // 10. Persist the updated booking + its payment ledger row (idempotent on payment.id)
     await booking.save();
+    await recordGatewayPayment({
+      booking,
+      amount: amountPaidRupees,
+      reference: payment.id,
+      paidAt: payment.created_at ? new Date(payment.created_at * 1000) : new Date()
+    });
 
     console.log("Payment captured successfully:", {
       bookingId: booking._id.toString(),

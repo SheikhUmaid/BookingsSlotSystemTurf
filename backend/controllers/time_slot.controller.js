@@ -1,7 +1,8 @@
 import TimeSlot from "../models/time_slot.model.js";
 import Booking from "../models/booking.model.js";
 import mongoose from "mongoose";
-import { pitchOccupancyFilter } from "../utils/pitch_conflict.js";
+import { activeBookingFilter, pitchOccupancyFilter } from "../utils/pitch_conflict.js";
+import { maintenanceBlockedSlots } from "../utils/maintenance.js";
 
 export const createTimeSlot = async (req, res) => {
     try {
@@ -68,7 +69,7 @@ export const getAvailableTimeSlots = async (req, res) => {
                 $gte: startDate,
                 $lt: endDate
             },
-            status: { $ne: "cancelled" },
+            ...activeBookingFilter(),
             ...(pitch ? pitchOccupancyFilter(pitch) : {})
         }).select("time_slots");
 
@@ -81,6 +82,12 @@ export const getAvailableTimeSlots = async (req, res) => {
         let availableTimeSlots = await TimeSlot.find({
             _id: { $nin: bookedSlotIds }
         });
+
+        // 6b. Hide slots closed for maintenance on this pitch
+        if (pitch) {
+            const blocked = await maintenanceBlockedSlots(pitch, startDate, availableTimeSlots);
+            availableTimeSlots = availableTimeSlots.filter((slot) => !blocked.has(String(slot._id)));
+        }
 
         // 7. Remove past slots only when the selected date is today
         const parts = new Intl.DateTimeFormat("en-GB", {

@@ -48,6 +48,7 @@ interface ApiSlotItem {
   category: SlotCategory;
   price: number;
   is_booked: boolean;
+  maintenance?: { _id: string; title: string; status: string } | null;
   booking: SlotBookingInfo | null;
 }
 
@@ -283,7 +284,11 @@ function CalendarPage() {
                           {to12(s.start_time)} – {to12(s.end_time)}
                         </div>
                         <div className="truncate text-[12px] text-muted-foreground">
-                          {b ? `${b.customer_name} · ${b.booking_ref}` : `${s.category} · 60 min`}
+                          {b
+                            ? `${b.customer_name} · ${b.booking_ref}`
+                            : s.maintenance
+                              ? `Maintenance · ${s.maintenance.title}`
+                              : `${s.category} · 60 min`}
                         </div>
                       </div>
                     </div>
@@ -308,6 +313,10 @@ function CalendarPage() {
                       ) : pending ? (
                         <span className="flex items-center gap-1 text-[11.5px] font-medium text-amber-600">
                           <Clock className="size-3.5" /> Pending
+                        </span>
+                      ) : s.maintenance ? (
+                        <span className="flex items-center gap-1 text-[11.5px] font-medium text-warning">
+                          <Ban className="size-3.5" /> Maintenance
                         </span>
                       ) : s.is_booked ? (
                         <span className="flex items-center gap-1 text-[11.5px] font-medium text-muted-foreground">

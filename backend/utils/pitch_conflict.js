@@ -14,3 +14,10 @@ export const pitchOccupancyFilter = (pitchId) => ({
         { pitch: null },
     ],
 });
+
+/**
+ * Statuses that no longer hold a slot. "expired" = an online booking whose
+ * 5-minute payment window lapsed; it must free the slot just like a cancellation.
+ */
+export const INACTIVE_BOOKING_STATUSES = ["cancelled", "expired"];
+export const activeBookingFilter = () => ({ status: { $nin: INACTIVE_BOOKING_STATUSES } });

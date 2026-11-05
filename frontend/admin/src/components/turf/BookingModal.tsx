@@ -11,6 +11,7 @@ import { fmtDate, inr } from "@/lib/turf-data";
 import { selectCls } from "./ui-bits";
 import { adminFetch } from "@/lib/api";
 import { useSubscription } from "@/lib/useSubscription";
+import { METHOD_LABELS, MANUAL_METHODS } from "@/lib/business";
 import { usePitches } from "@/lib/usePitches";
 
 interface ApiSlotItem {
@@ -52,6 +53,10 @@ export function BookingModal() {
   const [errors, setErrors] = useState<{ name?: string; phone?: string; slot?: string; pitch?: string }>({});
   const [conflict, setConflict] = useState<string | null>(null);
   const [prefilled, setPrefilled] = useState(false);
+  // Money taken at the counter right now
+  const [payNow, setPayNow] = useState<"full" | "partial" | "none">("full");
+  const [partialAmount, setPartialAmount] = useState("");
+  const [method, setMethod] = useState("cash");
 
   // Sync draft state when opened
   useEffect(() => {
@@ -64,6 +69,9 @@ export function BookingModal() {
       setPhone("");
       setErrors({});
       setConflict(null);
+      setPayNow("full");
+      setPartialAmount("");
+      setMethod("cash");
     }
   }, [draft]);
 
@@ -122,6 +130,10 @@ export function BookingModal() {
     }
     if (!pitchId) errs.pitch = "Choose a pitch";
     if (!slotId) errs.slot = "Choose a time slot";
+    const partialPaid = Number(partialAmount);
+    if (payNow === "partial" && (!Number.isFinite(partialPaid) || partialPaid <= 0 || (slot && partialPaid >= slot.price))) {
+      errs.slot = `Advance must be between ₹1 and ₹${slot ? slot.price - 1 : "price"}`;
+    }
     setErrors(errs);
     if (Object.keys(errs).length) return;
 
@@ -141,8 +153,10 @@ export function BookingModal() {
           pitch: pitchId,
           date,
           time_slots: [slotId],
-          status: "paid",
-          payment_type: "full",
+          status: payNow === "full" ? "paid" : payNow === "partial" ? "partial" : "pending",
+          payment_type: payNow === "partial" ? "partial" : "full",
+          amount_paid: payNow === "full" ? slot?.price ?? 0 : payNow === "partial" ? Number(partialAmount) : 0,
+          payment_method: method,
         }),
       });
 
@@ -154,6 +168,8 @@ export function BookingModal() {
       queryClient.invalidateQueries({ queryKey: ["admin-time-slots-availability"] });
       queryClient.invalidateQueries({ queryKey: ["admin-month-availability"] });
       queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-payments"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-daily-report"] });
 
       closeBooking();
     } catch (err: any) {
@@ -309,6 +325,59 @@ export function BookingModal() {
           <div className="flex items-center justify-between rounded-md bg-surface px-3 py-2.5">
             <span className="text-[13px] text-muted-foreground">Booking price</span>
             <span className="text-[17px] font-semibold">{slot ? inr(slot.price) : "—"}</span>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[12.5px]">Payment now</Label>
+            <div className="grid grid-cols-3 gap-1.5 rounded-md border p-1 text-[12.5px]">
+              {(
+                [
+                  ["full", "Paid in full"],
+                  ["partial", "Advance"],
+                  ["none", "Not paid yet"],
+                ] as const
+              ).map(([k, label]) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setPayNow(k)}
+                  className={`rounded px-2 py-1.5 font-medium ${payNow === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {payNow !== "none" && (
+              <div className="grid grid-cols-2 gap-2">
+                {payNow === "partial" && (
+                  <Input
+                    type="number"
+                    min={1}
+                    value={partialAmount}
+                    onChange={(e) => setPartialAmount(e.target.value)}
+                    placeholder="Advance ₹"
+                    className="h-9"
+                  />
+                )}
+                <select
+                  value={method}
+                  onChange={(e) => setMethod(e.target.value)}
+                  className={selectCls + " h-9 w-full" + (payNow === "full" ? " col-span-2" : "")}
+                  aria-label="Payment method"
+                >
+                  {MANUAL_METHODS.map((m) => (
+                    <option key={m} value={m}>
+                      {METHOD_LABELS[m]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {payNow === "none" && (
+              <p className="text-[11.5px] text-muted-foreground">
+                Collect later from the booking.
+              </p>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-1">

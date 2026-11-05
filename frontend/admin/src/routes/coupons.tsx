@@ -5,7 +5,13 @@ import { Pencil, Plus, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +42,7 @@ interface ApiCoupon {
   valid_from: string;
   valid_until: string;
   usage_limit: number | null;
+  per_user_limit?: number | null;
   used_count: number;
   active: boolean;
   createdAt?: string;
@@ -53,6 +60,7 @@ interface CouponForm {
   validFrom: string;
   validUntil: string;
   usageLimit: string;
+  perUserLimit: string;
   active: boolean;
 }
 
@@ -69,6 +77,7 @@ const emptyForm: CouponForm = {
   validFrom: "",
   validUntil: "",
   usageLimit: "",
+  perUserLimit: "",
   active: true,
 };
 
@@ -105,6 +114,7 @@ function CouponsPage() {
       validFrom: getTodayStr(),
       validUntil: getDefaultUntilStr(),
       usageLimit: "",
+      perUserLimit: "",
       active: true,
     });
     setDialogOpen(true);
@@ -118,6 +128,7 @@ function CouponsPage() {
       validFrom: new Date(coupon.valid_from).toISOString().slice(0, 10),
       validUntil: new Date(coupon.valid_until).toISOString().slice(0, 10),
       usageLimit: coupon.usage_limit ? String(coupon.usage_limit) : "",
+      perUserLimit: coupon.per_user_limit ? String(coupon.per_user_limit) : "",
       active: coupon.active,
     });
     setDialogOpen(true);
@@ -148,6 +159,7 @@ function CouponsPage() {
         valid_from: form.validFrom,
         valid_until: form.validUntil,
         usage_limit: form.usageLimit ? Number(form.usageLimit) : null,
+        per_user_limit: form.perUserLimit ? Number(form.perUserLimit) : null,
         active: form.active,
       };
 
@@ -157,7 +169,7 @@ function CouponsPage() {
           {
             method: "PATCH",
             body: JSON.stringify(payload),
-          }
+          },
         );
         toast.success(`Coupon ${cleanCode} updated successfully`);
       } else {
@@ -184,7 +196,7 @@ function CouponsPage() {
     try {
       const res = await adminFetch<{ message: string; coupon: ApiCoupon }>(
         `/admin/coupons/${coupon._id}/toggle`,
-        { method: "PATCH" }
+        { method: "PATCH" },
       );
       toast.success(res.message);
       queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
@@ -252,6 +264,7 @@ function CouponsPage() {
               <Th>Valid from</Th>
               <Th>Valid until</Th>
               <Th>Usage</Th>
+              <Th>Per customer</Th>
               <Th>Status</Th>
               <Th className="text-right">Actions</Th>
             </tr>
@@ -260,7 +273,7 @@ function CouponsPage() {
             {isLoading && list.length === 0
               ? Array.from({ length: 4 }).map((_, i) => (
                   <tr key={i}>
-                    {Array.from({ length: 7 }).map((_, j) => (
+                    {Array.from({ length: 8 }).map((_, j) => (
                       <Td key={j}>
                         <div className="h-4 animate-pulse rounded bg-muted" />
                       </Td>
@@ -295,12 +308,25 @@ function CouponsPage() {
                           </span>
                         </div>
                       </Td>
+                      <Td className="text-[12.5px]">
+                        {c.per_user_limit === 1 ? (
+                          <span className="font-medium">Once per account</span>
+                        ) : c.per_user_limit ? (
+                          <span className="font-medium">{c.per_user_limit}× per account</span>
+                        ) : (
+                          <span className="text-muted-foreground">No limit</span>
+                        )}
+                      </Td>
                       <Td>
                         <button
                           onClick={() => !isInactive && toggleStatus(c)}
                           disabled={togglingId === c._id || isInactive}
                           className="transition-opacity hover:opacity-80 disabled:opacity-50"
-                          title={isInactive ? "Account inactive (read only)" : "Click to toggle active status"}
+                          title={
+                            isInactive
+                              ? "Account inactive (read only)"
+                              : "Click to toggle active status"
+                          }
                         >
                           <StatusBadge status={c.active ? "Active" : "Inactive"} />
                         </button>
@@ -384,6 +410,44 @@ function CouponsPage() {
                 onChange={(e) => setForm({ ...form, usageLimit: e.target.value })}
                 placeholder="Leave blank for ∞"
               />
+              <p className="text-[11px] text-muted-foreground">Total uses across all customers</p>
+            </div>
+            <div className="col-span-2 space-y-1.5">
+              <Label>Uses per customer</Label>
+              <select
+                value={
+                  ["", "1", "2", "3", "5"].includes(form.perUserLimit)
+                    ? form.perUserLimit
+                    : "custom"
+                }
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    perUserLimit: e.target.value === "custom" ? "10" : e.target.value,
+                  })
+                }
+                className="h-9 w-full rounded-md border border-input bg-background px-2.5 text-[13px]"
+              >
+                <option value="">No limit — a customer can use it on every booking</option>
+                <option value="1">Only once per customer account</option>
+                <option value="2">Up to 2 times per customer</option>
+                <option value="3">Up to 3 times per customer</option>
+                <option value="5">Up to 5 times per customer</option>
+                <option value="custom">Custom…</option>
+              </select>
+              {!["", "1", "2", "3", "5"].includes(form.perUserLimit) && (
+                <Input
+                  type="number"
+                  min={1}
+                  value={form.perUserLimit}
+                  onChange={(e) => setForm({ ...form, perUserLimit: e.target.value })}
+                  placeholder="Times per customer"
+                />
+              )}
+              <p className="text-[11px] text-muted-foreground">
+                Counted per signed-in account. If a booking is cancelled or its payment isn't
+                completed, the customer can use the coupon again.
+              </p>
             </div>
             <div className="space-y-1.5">
               <Label>Valid from</Label>

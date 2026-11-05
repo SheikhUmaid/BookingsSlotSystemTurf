@@ -13,9 +13,15 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BookingsRouteImport } from './routes/bookings'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as CouponsRouteImport } from './routes/coupons'
+import { Route as CustomersRouteImport } from './routes/customers'
+import { Route as DailyReportRouteImport } from './routes/daily-report'
+import { Route as ExpensesRouteImport } from './routes/expenses'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MaintenanceRouteImport } from './routes/maintenance'
+import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PitchesRouteImport } from './routes/pitches'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as RecurringRouteImport } from './routes/recurring'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -42,9 +48,34 @@ const CouponsRoute = CouponsRouteImport.update({
   path: '/coupons',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CustomersRoute = CustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DailyReportRoute = DailyReportRouteImport.update({
+  id: '/daily-report',
+  path: '/daily-report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExpensesRoute = ExpensesRouteImport.update({
+  id: '/expenses',
+  path: '/expenses',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MaintenanceRoute = MaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentsRoute = PaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PitchesRoute = PitchesRouteImport.update({
@@ -55,6 +86,11 @@ const PitchesRoute = PitchesRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecurringRoute = RecurringRouteImport.update({
+  id: '/recurring',
+  path: '/recurring',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportsRoute = ReportsRouteImport.update({
@@ -88,9 +124,15 @@ export interface FileRoutesByFullPath {
   '/bookings': typeof BookingsRoute
   '/calendar': typeof CalendarRoute
   '/coupons': typeof CouponsRoute
+  '/customers': typeof CustomersRoute
+  '/daily-report': typeof DailyReportRoute
+  '/expenses': typeof ExpensesRoute
   '/login': typeof LoginRoute
+  '/maintenance': typeof MaintenanceRoute
+  '/payments': typeof PaymentsRoute
   '/pitches': typeof PitchesRoute
   '/pricing': typeof PricingRoute
+  '/recurring': typeof RecurringRoute
   '/reports': typeof ReportsRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
@@ -102,9 +144,15 @@ export interface FileRoutesByTo {
   '/bookings': typeof BookingsRoute
   '/calendar': typeof CalendarRoute
   '/coupons': typeof CouponsRoute
+  '/customers': typeof CustomersRoute
+  '/daily-report': typeof DailyReportRoute
+  '/expenses': typeof ExpensesRoute
   '/login': typeof LoginRoute
+  '/maintenance': typeof MaintenanceRoute
+  '/payments': typeof PaymentsRoute
   '/pitches': typeof PitchesRoute
   '/pricing': typeof PricingRoute
+  '/recurring': typeof RecurringRoute
   '/reports': typeof ReportsRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
@@ -117,9 +165,15 @@ export interface FileRoutesById {
   '/bookings': typeof BookingsRoute
   '/calendar': typeof CalendarRoute
   '/coupons': typeof CouponsRoute
+  '/customers': typeof CustomersRoute
+  '/daily-report': typeof DailyReportRoute
+  '/expenses': typeof ExpensesRoute
   '/login': typeof LoginRoute
+  '/maintenance': typeof MaintenanceRoute
+  '/payments': typeof PaymentsRoute
   '/pitches': typeof PitchesRoute
   '/pricing': typeof PricingRoute
+  '/recurring': typeof RecurringRoute
   '/reports': typeof ReportsRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
@@ -133,9 +187,15 @@ export interface FileRouteTypes {
     | '/bookings'
     | '/calendar'
     | '/coupons'
+    | '/customers'
+    | '/daily-report'
+    | '/expenses'
     | '/login'
+    | '/maintenance'
+    | '/payments'
     | '/pitches'
     | '/pricing'
+    | '/recurring'
     | '/reports'
     | '/services'
     | '/settings'
@@ -147,9 +207,15 @@ export interface FileRouteTypes {
     | '/bookings'
     | '/calendar'
     | '/coupons'
+    | '/customers'
+    | '/daily-report'
+    | '/expenses'
     | '/login'
+    | '/maintenance'
+    | '/payments'
     | '/pitches'
     | '/pricing'
+    | '/recurring'
     | '/reports'
     | '/services'
     | '/settings'
@@ -161,9 +227,15 @@ export interface FileRouteTypes {
     | '/bookings'
     | '/calendar'
     | '/coupons'
+    | '/customers'
+    | '/daily-report'
+    | '/expenses'
     | '/login'
+    | '/maintenance'
+    | '/payments'
     | '/pitches'
     | '/pricing'
+    | '/recurring'
     | '/reports'
     | '/services'
     | '/settings'
@@ -176,9 +248,15 @@ export interface RootRouteChildren {
   BookingsRoute: typeof BookingsRoute
   CalendarRoute: typeof CalendarRoute
   CouponsRoute: typeof CouponsRoute
+  CustomersRoute: typeof CustomersRoute
+  DailyReportRoute: typeof DailyReportRoute
+  ExpensesRoute: typeof ExpensesRoute
   LoginRoute: typeof LoginRoute
+  MaintenanceRoute: typeof MaintenanceRoute
+  PaymentsRoute: typeof PaymentsRoute
   PitchesRoute: typeof PitchesRoute
   PricingRoute: typeof PricingRoute
+  RecurringRoute: typeof RecurringRoute
   ReportsRoute: typeof ReportsRoute
   ServicesRoute: typeof ServicesRoute
   SettingsRoute: typeof SettingsRoute
@@ -216,11 +294,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CouponsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/customers': {
+      id: '/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof CustomersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/daily-report': {
+      id: '/daily-report'
+      path: '/daily-report'
+      fullPath: '/daily-report'
+      preLoaderRoute: typeof DailyReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/expenses': {
+      id: '/expenses'
+      path: '/expenses'
+      fullPath: '/expenses'
+      preLoaderRoute: typeof ExpensesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maintenance': {
+      id: '/maintenance'
+      path: '/maintenance'
+      fullPath: '/maintenance'
+      preLoaderRoute: typeof MaintenanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payments': {
+      id: '/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof PaymentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pitches': {
@@ -235,6 +348,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recurring': {
+      id: '/recurring'
+      path: '/recurring'
+      fullPath: '/recurring'
+      preLoaderRoute: typeof RecurringRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reports': {
@@ -280,9 +400,15 @@ const rootRouteChildren: RootRouteChildren = {
   BookingsRoute: BookingsRoute,
   CalendarRoute: CalendarRoute,
   CouponsRoute: CouponsRoute,
+  CustomersRoute: CustomersRoute,
+  DailyReportRoute: DailyReportRoute,
+  ExpensesRoute: ExpensesRoute,
   LoginRoute: LoginRoute,
+  MaintenanceRoute: MaintenanceRoute,
+  PaymentsRoute: PaymentsRoute,
   PitchesRoute: PitchesRoute,
   PricingRoute: PricingRoute,
+  RecurringRoute: RecurringRoute,
   ReportsRoute: ReportsRoute,
   ServicesRoute: ServicesRoute,
   SettingsRoute: SettingsRoute,

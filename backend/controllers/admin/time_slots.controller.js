@@ -2,7 +2,8 @@ import TimeSlot from "../../models/time_slot.model.js";
 import Booking from "../../models/booking.model.js";
 import Pitch from "../../models/pitch.model.js";
 import mongoose from "mongoose";
-import { pitchOccupancyFilter } from "../../utils/pitch_conflict.js";
+import { activeBookingFilter, pitchOccupancyFilter } from "../../utils/pitch_conflict.js";
+import { findBlockingMaintenance, maintenanceBlocksSlot } from "../../utils/maintenance.js";
 
 /**
  * Parse date parameter (YYYY-MM-DD or DD/MM/YYYY) into UTC { startDate, endDate, dateStr }
@@ -59,7 +60,7 @@ export const getTimeSlotsAvailability = async (req, res) => {
         // 2. Build booking query for that day, scoped to the pitch if given
         const bookingQuery = {
             date: { $gte: startDate, $lt: endDate },
-            status: { $ne: "cancelled" },
+            ...activeBookingFilter(),
             ...(pitch ? pitchOccupancyFilter(pitch) : {}),
         };
 
@@ -93,10 +94,14 @@ export const getTimeSlotsAvailability = async (req, res) => {
             }
         }
 
+        // 4b. Maintenance on this pitch (only meaningful when scoped to a pitch)
+        const maintenance = pitch ? await findBlockingMaintenance(pitch, startDate, startDate) : [];
+
         // 5. Build enriched slot objects
         const enrichedSlots = allSlots.map((slot) => {
             const slotId = slot._id.toString();
             const bookedInfo = bookedMap.get(slotId);
+            const m = bookedInfo ? null : maintenance.find((r) => maintenanceBlocksSlot(r, startDate, slot));
             return {
                 _id: slot._id,
                 id: slot._id.toString(),
@@ -104,15 +109,18 @@ export const getTimeSlotsAvailability = async (req, res) => {
                 end_time: slot.end_time,
                 category: slot.category,
                 price: slot.price,
-                is_booked: !!bookedInfo,
+                // Maintenance-blocked slots count as unavailable for booking
+                is_booked: !!bookedInfo || !!m,
                 booking: bookedInfo ?? null,
+                maintenance: m ? { _id: m._id, title: m.title, status: m.status } : null,
             };
         });
 
         const openCount = enrichedSlots.filter((s) => !s.is_booked).length;
-        const bookedCount = enrichedSlots.filter((s) => s.is_booked).length;
+        const bookedCount = enrichedSlots.filter((s) => s.booking).length;
+        const blockedCount = enrichedSlots.filter((s) => s.maintenance).length;
         const revenue = enrichedSlots
-            .filter((s) => s.is_booked)
+            .filter((s) => s.booking)
             .reduce((sum, s) => sum + (s.price || 0), 0);
 
         return res.status(200).json({
@@ -121,6 +129,7 @@ export const getTimeSlotsAvailability = async (req, res) => {
             total_slots: enrichedSlots.length,
             open_count: openCount,
             booked_count: bookedCount,
+            maintenance_count: blockedCount,
             revenue,
             slots: enrichedSlots,
         });
@@ -170,7 +179,7 @@ export const getMonthAvailability = async (req, res) => {
         // Booking query for the month, scoped to the pitch if given
         const bookingQuery = {
             date: { $gte: startOfMonth, $lte: endOfMonth },
-            status: { $ne: "cancelled" },
+            ...activeBookingFilter(),
             ...(pitch ? pitchOccupancyFilter(pitch) : {}),
         };
 
@@ -185,14 +194,31 @@ export const getMonthAvailability = async (req, res) => {
             bookedPerDay[dayStr] = (bookedPerDay[dayStr] || 0) + count;
         }
 
+        // Maintenance-blocked slots (per pitch when scoped, across pitches otherwise)
+        const allSlots = await TimeSlot.find().select("start_time end_time").lean();
+        const maintenance = await findBlockingMaintenance(pitch || null, startOfMonth, endOfMonth);
+        const blockedPerDay = {};
+        for (const m of maintenance) {
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = new Date(Date.UTC(year, monthNum - 1, d));
+                const n = allSlots.filter((s) => maintenanceBlocksSlot(m, date, s)).length;
+                if (n) {
+                    const key = date.toISOString().slice(0, 10);
+                    blockedPerDay[key] = (blockedPerDay[key] || 0) + n;
+                }
+            }
+        }
+
         const days = {};
         for (let d = 1; d <= daysInMonth; d++) {
             const dayKey = `${year}-${String(monthNum).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-            const booked = bookedPerDay[dayKey] || 0;
+            const blocked = blockedPerDay[dayKey] || 0;
+            const booked = Math.min(totalSlotsCount, (bookedPerDay[dayKey] || 0) + blocked);
             const ratio = totalSlotsCount > 0 ? booked / totalSlotsCount : 0;
             const state = ratio >= 1 ? "full" : ratio >= 0.6 ? "limited" : "open";
             days[dayKey] = {
                 booked,
+                maintenance: blocked,
                 total: totalSlotsCount,
                 state,
             };

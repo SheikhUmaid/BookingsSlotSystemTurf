@@ -25,9 +25,10 @@ export default function CouponCode({
         try {
             await onApply?.(couponCode);
         } catch (err) {
+            // Server messages: "already used once per account", "expired", "not found"…
             setError(
-                err.request.response?.data?.detail ||
-                err.request.response?.data?.message ||
+                err?.response?.data?.message ||
+                (err?.response ? "Invalid Coupon!" : err?.message) ||
                 "Invalid Coupon!"
             );
         }

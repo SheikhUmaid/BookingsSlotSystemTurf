@@ -59,7 +59,12 @@ const AREA_LABELS: Record<string, string> = {
   services: "Services",
   pitches: "Pitches",
   coupons: "Coupons",
-  reports: "Reports",
+  reports: "Reports & daily report",
+  customers: "Customers",
+  payments: "Payments",
+  recurring: "Recurring bookings",
+  expenses: "Expenses",
+  maintenance: "Maintenance",
 };
 
 const emptyForm = { name: "", phone: "", email: "", password: "" };

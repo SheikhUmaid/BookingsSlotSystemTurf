@@ -20,6 +20,12 @@ import adminSubscriptionRouter from "./routes/admin/subscription.router.js";
 import adminTeamRouter from "./routes/admin/team.router.js";
 import adminReportsRouter from "./routes/admin/reports.router.js";
 import licenceRouter from "./routes/licence.router.js";
+import adminCustomersRouter from "./routes/admin/customers.router.js";
+import adminPaymentsRouter from "./routes/admin/payments.router.js";
+import adminRecurringRouter from "./routes/admin/recurring.router.js";
+import adminExpensesRouter from "./routes/admin/expenses.router.js";
+import adminMaintenanceRouter from "./routes/admin/maintenance.router.js";
+import { getDailyReport } from "./controllers/admin/daily_report.controller.js";
 import venueRouter from "./routes/venue.router.js";
 import authMiddleware from "./middlewares/auth.middleware.js";
 import adminMiddleware from "./middlewares/admin.middleware.js";
@@ -61,6 +67,10 @@ app.use(morgan("dev"));
 app.use("/api/payments", paymentsRouter);
 
 
+// Expense receipts are sent as base64 JSON (max 2 MB file) — larger body limit on that route only.
+// body-parser skips requests that were already parsed, so the global parser below leaves these alone.
+app.use("/api/admin/expenses", express.json({ limit: "3mb" }));
+
 //configure express to parse JSON
 app.use(express.json());
 
@@ -98,6 +108,12 @@ app.use("/api/admin/dashboard", authMiddleware, allowStaff("dashboard"), adminDa
 app.use("/api/admin/coupons", authMiddleware, allowStaff("coupons"), adminCouponRouter);
 app.use("/api/admin/reports", authMiddleware, allowStaff("reports"), adminReportsRouter);
 app.use("/api/admin/subscription", authMiddleware, allowStaff("dashboard", { readAll: true }), adminSubscriptionRouter);
+app.use("/api/admin/customers", authMiddleware, allowStaff("customers"), adminCustomersRouter);
+app.use("/api/admin/payments", authMiddleware, allowStaff("payments"), adminPaymentsRouter);
+app.use("/api/admin/recurring", authMiddleware, allowStaff("recurring"), adminRecurringRouter);
+app.use("/api/admin/expenses", authMiddleware, allowStaff("expenses"), adminExpensesRouter);
+app.use("/api/admin/maintenance", authMiddleware, allowStaff("maintenance", { readAll: true }), adminMaintenanceRouter);
+app.get("/api/admin/daily-report", authMiddleware, allowStaff("reports"), getDailyReport);
 app.use("/api/admin/settings", authMiddleware, adminMiddleware, adminSettingsRouter);
 app.use("/api/admin/team", authMiddleware, adminMiddleware, adminTeamRouter);
 

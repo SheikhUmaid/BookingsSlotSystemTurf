@@ -29,7 +29,8 @@ const bookingSchema = mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["pending", "partial", "paid", "cancelled"],
+        // "expired" is set by the expiry cron for unpaid online bookings.
+        enum: ["pending", "partial", "paid", "cancelled", "expired"],
         default: "pending"
     },
     total_payable: {
@@ -63,8 +64,44 @@ const bookingSchema = mongoose.Schema({
     },
     payment_signature: {
         type: String
+    },
+    // Net money collected = sum(payments) − sum(refunds); amount_paid above is kept
+    // equal to that net figure. Gross refunds are tracked here.
+    amount_refunded: {
+        type: Number,
+        default: 0
+    },
+    // Where the booking came from (null for bookings created before this field existed)
+    source: {
+        type: String,
+        enum: ["online", "admin", "recurring", null],
+        default: null
+    },
+    // Coupon applied to this booking (used for per-customer coupon limits)
+    coupon: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Coupon",
+        default: null
+    },
+    coupon_code: {
+        type: String,
+        default: null
+    },
+    // Occurrence of a recurring schedule
+    recurring: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "RecurringSchedule",
+        default: null
     }
 }, { timestamps: true })
+
+bookingSchema.index({ date: 1, pitch: 1, status: 1 });
+bookingSchema.index({ user: 1, date: -1 });
+bookingSchema.index({ status: 1, expires_at: 1 });
+bookingSchema.index({ recurring: 1, date: 1 });
+bookingSchema.index({ coupon: 1, user: 1 }, { sparse: true });
+bookingSchema.index({ payment_order_id: 1 }, { sparse: true });
+bookingSchema.index({ createdAt: -1 });
 
 const Booking = mongoose.model("Booking", bookingSchema);
 

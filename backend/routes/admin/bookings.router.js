@@ -1,5 +1,11 @@
 import express from "express";
 import { requireBookingEnabled, requireFeature } from "../../middlewares/licence.middleware.js";
+import adminMiddleware from "../../middlewares/admin.middleware.js";
+import {
+    getBookingPayments,
+    addBookingPayment,
+    addBookingRefund,
+} from "../../controllers/admin/payments.controller.js";
 import {
     getAllBookings,
     getBookingById,
@@ -25,6 +31,14 @@ router.get("/:bookingId", getBookingById);
 
 // PATCH /api/admin/bookings/:bookingId/status
 router.patch("/:bookingId/status", updateBookingStatus);
+
+// Payments for one booking
+// GET  /api/admin/bookings/:bookingId/payments          — ledger
+// POST /api/admin/bookings/:bookingId/payments          — record cash/UPI/card… payment
+// POST /api/admin/bookings/:bookingId/refunds           — admins only
+router.get("/:bookingId/payments", getBookingPayments);
+router.post("/:bookingId/payments", addBookingPayment);
+router.post("/:bookingId/refunds", adminMiddleware, addBookingRefund);
 
 // DELETE /api/admin/bookings/:bookingId
 router.delete("/:bookingId", deleteBooking);

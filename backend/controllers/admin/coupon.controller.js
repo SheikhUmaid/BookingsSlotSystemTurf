@@ -7,6 +7,13 @@ import mongoose from "mongoose";
 /**
  * Get all coupons in the system.
  */
+/** null/"" → no limit; positive integer → that limit; anything else → undefined (invalid). */
+function parsePerUserLimit(value) {
+    if (value === undefined || value === null || value === "") return null;
+    const n = Number(value);
+    return Number.isInteger(n) && n >= 1 ? n : undefined;
+}
+
 export const getAllCoupons = async (req, res) => {
     try {
         const coupons = await Coupon.find().sort({ createdAt: -1 }).lean();
@@ -51,11 +58,11 @@ export const getCouponById = async (req, res) => {
 // ---------------------------------------------------------------------------
 /**
  * Create a new coupon.
- * Body: { code, discount_percentage, valid_from, valid_until, usage_limit, active }
+ * Body: { code, discount_percentage, valid_from, valid_until, usage_limit, per_user_limit, active }
  */
 export const createCoupon = async (req, res) => {
     try {
-        const { code, discount_percentage, valid_from, valid_until, usage_limit, active = true } = req.body;
+        const { code, discount_percentage, valid_from, valid_until, usage_limit, per_user_limit, active = true } = req.body;
 
         // 1. Validate code
         if (!code || typeof code !== "string" || !/^[A-Z0-9]{3,20}$/i.test(code.trim())) {
@@ -96,6 +103,12 @@ export const createCoupon = async (req, res) => {
             parsedLimit = limitNum;
         }
 
+        // 4b. Per-customer limit (1 = once per account)
+        const perUser = parsePerUserLimit(per_user_limit);
+        if (perUser === undefined) {
+            return res.status(400).json({ message: "Uses per customer must be a whole number of 1 or more (or empty for no limit)." });
+        }
+
         // 5. Check duplicate code
         const existing = await Coupon.findOne({ code: normalizedCode });
         if (existing) {
@@ -109,6 +122,7 @@ export const createCoupon = async (req, res) => {
             valid_from: startDate,
             valid_until: endDate,
             usage_limit: parsedLimit,
+            per_user_limit: perUser,
             active: Boolean(active),
             used_count: 0,
         });
@@ -134,7 +148,7 @@ export const createCoupon = async (req, res) => {
 export const updateCoupon = async (req, res) => {
     try {
         const { couponId } = req.params;
-        const { code, discount_percentage, valid_from, valid_until, usage_limit, active } = req.body;
+        const { code, discount_percentage, valid_from, valid_until, usage_limit, per_user_limit, active } = req.body;
 
         if (!mongoose.Types.ObjectId.isValid(couponId)) {
             return res.status(400).json({ message: "Invalid coupon ID format." });
@@ -210,6 +224,15 @@ export const updateCoupon = async (req, res) => {
                 }
                 coupon.usage_limit = limitNum;
             }
+        }
+
+        // Update per-customer limit
+        if (per_user_limit !== undefined) {
+            const perUser = parsePerUserLimit(per_user_limit);
+            if (perUser === undefined) {
+                return res.status(400).json({ message: "Uses per customer must be a whole number of 1 or more (or empty for no limit)." });
+            }
+            coupon.per_user_limit = perUser;
         }
 
         // Update active status

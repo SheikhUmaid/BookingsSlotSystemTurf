@@ -3,7 +3,9 @@ import Service from "../models/service.model.js";
 import TimeSlot from "../models/time_slot.model.js";
 import Coupon from "../models/coupon.model.js";
 import Pitch from "../models/pitch.model.js";
-import { pitchOccupancyFilter } from "../utils/pitch_conflict.js";
+import { activeBookingFilter, pitchOccupancyFilter } from "../utils/pitch_conflict.js";
+import { findMaintenanceConflict, maintenanceMessage } from "../utils/maintenance.js";
+import { customerCouponUses, perUserLimitMessage } from "../utils/coupons.js";
 import mongoose from "mongoose";
 import { hasFeature, getLicence } from "../services/licence.service.js";
 import { featureDeniedBody } from "../middlewares/licence.middleware.js";
@@ -110,7 +112,7 @@ export const createBooking = async (req, res) => {
                 $lt: endDate
             },
             time_slots: { $in: time_slots },
-            status: { $ne: "cancelled" },
+            ...activeBookingFilter(),
             ...pitchOccupancyFilter(pitch)
         });
 
@@ -119,6 +121,13 @@ export const createBooking = async (req, res) => {
                 message:
                     "One or more selected time slots are already booked on this pitch for this date."
             });
+        }
+
+        // 9b. Reject slots closed for maintenance
+        const requestedSlots = await TimeSlot.find({ _id: { $in: time_slots } }).select("start_time end_time").lean();
+        const maintenance = await findMaintenanceConflict(pitch, startDate, requestedSlots);
+        if (maintenance) {
+            return res.status(409).json({ message: maintenanceMessage(maintenance) });
         }
 
         // 10. Calculate the price on the backend.
@@ -133,6 +142,7 @@ export const createBooking = async (req, res) => {
             0
         );
 
+        let appliedCoupon = null;
         if (coupon_code) {
             if (!(await hasFeature("coupons"))) {
                 return res.status(403).json(featureDeniedBody("coupons", (await getLicence()).plan));
@@ -170,14 +180,17 @@ export const createBooking = async (req, res) => {
                 });
             }
 
+            // Per-customer limit (e.g. once per account)
+            if (coupon.per_user_limit && (await customerCouponUses(coupon._id, user)) >= coupon.per_user_limit) {
+                return res.status(409).json({
+                    message: perUserLimitMessage(coupon.per_user_limit)
+                });
+            }
+
             // Apply the discount
             const discountAmount = (totalPayable * coupon.discount_percentage) / 100;
             totalPayable -= discountAmount;
-
-            // Increment the used count of the coupon
-            coupon.used_count += 1;
-            await coupon.save();
-
+            appliedCoupon = coupon;
         }
 
 
@@ -198,11 +211,44 @@ export const createBooking = async (req, res) => {
             amount_paid: 0,
             payment_type: "full",
             status: "pending",
+            source: "online",
+            coupon: appliedCoupon?._id ?? null,
+            coupon_code: appliedCoupon?.code ?? null,
             expires_at: expiresAt
         });
 
         // 12. Save the booking to MongoDB
         await newBooking.save();
+
+        if (appliedCoupon) {
+            // Two bookings sent at the same moment could both pass the per-customer
+            // check above. Keep only the earliest ones within the limit.
+            if (appliedCoupon.per_user_limit) {
+                const uses = await Booking.find({
+                    coupon: appliedCoupon._id,
+                    user,
+                    status: { $nin: ["cancelled", "expired"] }
+                }).sort({ _id: 1 }).select("_id").lean();
+                const position = uses.findIndex((b) => b._id.equals(newBooking._id));
+                if (position >= appliedCoupon.per_user_limit) {
+                    await Booking.deleteOne({ _id: newBooking._id });
+                    return res.status(409).json({ message: perUserLimitMessage(appliedCoupon.per_user_limit) });
+                }
+            }
+
+            // Count the use against the overall limit atomically (never exceeds usage_limit)
+            const counted = await Coupon.findOneAndUpdate(
+                {
+                    _id: appliedCoupon._id,
+                    $or: [{ usage_limit: null }, { $expr: { $lt: ["$used_count", "$usage_limit"] } }]
+                },
+                { $inc: { used_count: 1 } }
+            );
+            if (!counted) {
+                await Booking.deleteOne({ _id: newBooking._id });
+                return res.status(400).json({ message: "Coupon usage limit has been reached." });
+            }
+        }
 
         // 13. Return the created booking
         return res.status(201).json({

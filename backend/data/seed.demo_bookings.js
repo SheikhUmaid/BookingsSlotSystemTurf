@@ -16,6 +16,9 @@ import Booking from "../models/booking.model.js";
 import Service from "../models/service.model.js";
 import Pitch from "../models/pitch.model.js";
 import TimeSlot from "../models/time_slot.model.js";
+import Payment from "../models/payment.model.js";
+import CustomerNote from "../models/customer_note.model.js";
+import RecurringSchedule from "../models/recurring_schedule.model.js";
 
 const DEMO_PHONE_PREFIX = "70000";
 const DAYS_BACK = 60;
@@ -63,6 +66,12 @@ const hourWeight = (hour) => {
 async function clearDemo() {
     const demoUsers = await User.find({ phone: { $regex: `^${DEMO_PHONE_PREFIX}` } }).select("_id").lean();
     const ids = demoUsers.map((u) => u._id);
+    // Everything hanging off demo customers goes too
+    await Promise.all([
+        Payment.deleteMany({ user: { $in: ids } }),
+        CustomerNote.deleteMany({ user: { $in: ids } }),
+        RecurringSchedule.deleteMany({ user: { $in: ids } }),
+    ]);
     const { deletedCount: bookings } = await Booking.deleteMany({ user: { $in: ids } });
     const { deletedCount: users } = await User.deleteMany({ _id: { $in: ids } });
     return { bookings, users };
@@ -191,7 +200,26 @@ async function seedDemo() {
     }
 
     // timestamps:false keeps our back-dated createdAt values.
-    await Booking.insertMany(docs, { timestamps: false });
+    const inserted = await Booking.insertMany(
+        docs.map((d) => ({ ...d, source: rand() < 0.6 ? "online" : "admin" })),
+        { timestamps: false }
+    );
+    // Payment ledger rows: app bookings paid online, counter bookings in cash/UPI.
+    await Payment.insertMany(
+        inserted
+            .filter((b) => b.amount_paid > 0)
+            .map((b) => ({
+                booking: b._id,
+                user: b.user,
+                kind: "payment",
+                amount: b.amount_paid,
+                method: b.source === "online" ? "online" : weighted([["cash", 3], ["upi", 2]]),
+                source: "legacy",
+                reference: b.source === "online" ? b.payment_id : null,
+                note: "Demo data",
+                paidAt: b.createdAt,
+            }))
+    );
 
     const byStatus = docs.reduce((m, d) => ((m[d.status] = (m[d.status] || 0) + 1), m), {});
     const revenue = docs.reduce((s, d) => s + d.amount_paid, 0);
