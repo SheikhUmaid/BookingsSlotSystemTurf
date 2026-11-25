@@ -78,7 +78,7 @@ export const createService = async (req, res) => {
         const newService = new Service({
             name: name.trim(),
             description: description.trim(),
-            icon: (icon && typeof icon === "string" ? icon.trim() : "goal") || "goal",
+            icon: (icon && typeof icon === "string" ? icon.trim() : "sports_soccer") || "sports_soccer",
         });
 
         await newService.save();
@@ -140,7 +140,7 @@ export const updateService = async (req, res) => {
         }
 
         if (icon !== undefined) {
-            service.icon = (icon && typeof icon === "string" ? icon.trim() : "goal") || "goal";
+            service.icon = (icon && typeof icon === "string" ? icon.trim() : "sports_soccer") || "sports_soccer";
         }
 
         await service.save();

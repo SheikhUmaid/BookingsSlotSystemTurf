@@ -11,6 +11,7 @@ export default defineConfig({
   plugins: [
     tailwindcss(), react(), VitePWA({
       registerType: "autoUpdate",
+      includeAssets: ["favicon.svg", "apple-touch-icon.png"],
 
       devOptions: {
         enabled: true,
@@ -32,14 +33,23 @@ export default defineConfig({
 
         icons: [
           {
-            src: "/pwa-icon.png",
+            src: "/pwa-icon-192.png",
             sizes: "192x192",
-            type: "image/png"
+            type: "image/png",
+            purpose: "any"
           },
           {
-            src: "/pwa-icon.png",
+            src: "/pwa-icon-512.png",
             sizes: "512x512",
-            type: "image/png"
+            type: "image/png",
+            purpose: "any"
+          },
+          {
+            // Full-bleed version so Android can crop it to circles/squircles.
+            src: "/pwa-maskable-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable"
           }
         ]
       }

@@ -180,7 +180,7 @@ export default function LoginModal({
                         </div>
 
                         <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-400">
+                            <p className="font-['Barlow_Condensed'] text-[20px] font-bold uppercase leading-none tracking-wide text-white">
                                 {venueName}
                             </p>
                             <p className="mt-0.5 text-xs text-on-surface-variant">

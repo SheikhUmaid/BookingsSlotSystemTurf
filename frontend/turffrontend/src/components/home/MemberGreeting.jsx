@@ -20,9 +20,9 @@ export default function MemberGreeting({ name = "Player" }) {
 
             {/* Greeting row */}
             <div className="flex items-center justify-between gap-3">
-                <h1 className="font-['Space_Grotesk'] text-[26px] font-bold leading-tight tracking-tight text-white">
+                <h2 className="font-['Space_Grotesk'] text-[20px] font-bold leading-tight tracking-tight text-white">
                     {getGreeting()}, {isAuthenticated ? name : "Athlete"}.
-                </h1>
+                </h2>
 
                 {isAuthenticated && (
                     <span className="flex shrink-0 items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-0.5 font-['Space_Grotesk'] text-[9px] font-bold uppercase tracking-widest text-emerald-400">

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import SportIcon from '../shared/SportIcon';
 
 export default function SportSelection({ sports, handleSportChange, selectedSport }) {
     // const [selectedSport, setSelectedSport] = useState('cricket');
@@ -43,9 +43,7 @@ export default function SportSelection({ sports, handleSportChange, selectedSpor
                                             : 'bg-surface-container-highest text-on-surface-variant group-hover:text-white'
                                         }`}
                                 >
-                                    <span className="material-symbols-outlined text-[20px]">
-                                        {sport.icon}
-                                    </span>
+                                    <SportIcon icon={sport.icon} className="text-[20px]" />
                                 </div>
 
                                 <div

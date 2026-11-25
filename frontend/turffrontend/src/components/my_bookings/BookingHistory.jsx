@@ -1,3 +1,4 @@
+import SportIcon from "../shared/SportIcon";
 import { dateFormatter } from "../../services/date.service";
 
 function HistoryBookingCard({ booking }) {
@@ -8,9 +9,7 @@ function HistoryBookingCard({ booking }) {
             {/* Sport icon and booking details */}
             <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-container-highest text-on-surface-variant">
-                    <span className="material-symbols-outlined text-xl">
-                        {booking.service.icon}
-                    </span>
+                    <SportIcon icon={booking.service?.icon} className="text-xl" />
                 </div>
 
                 <div className="flex min-w-0 flex-col gap-1">

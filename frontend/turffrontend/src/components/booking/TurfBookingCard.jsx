@@ -6,7 +6,7 @@ export default function TurfBookingCard() {
 
   return (
     <section className="relative w-full overflow-hidden bg-surface-container-lowest border-b border-white/5">
-      <div className="relative w-full h-36 overflow-hidden">
+      <div className="relative w-full h-40 overflow-hidden">
         {/* Stadium background image */}
         <img
           alt={`${venueName} turf`}
@@ -29,19 +29,22 @@ export default function TurfBookingCard() {
 
         {/* Venue name and hours */}
         <div className="absolute bottom-2.5 left-4 right-4">
-          <div className="text-[11px] text-on-surface-variant font-medium flex items-center gap-1.5 mb-0.5">
-            <span className="truncate">{venueName}</span>
+          <div className="text-[11px] text-on-surface-variant font-semibold uppercase tracking-[0.14em] flex items-center gap-1.5 mb-1">
+            <span>Reserve a Pitch</span>
             {venue?.opening_hours && (
               <>
                 <span>•</span>
-                <span className="shrink-0">{venue.opening_hours}</span>
+                <span className="truncate normal-case tracking-normal font-medium">{venue.opening_hours}</span>
               </>
             )}
           </div>
 
-          <h2 className="font-headline-lg text-lg sm:text-xl font-bold tracking-tight text-white leading-tight">
-            Reserve a Pitch
-          </h2>
+          <h1
+            className="line-clamp-2 break-words font-['Barlow_Condensed'] text-[30px] sm:text-[34px] font-bold uppercase tracking-wide text-white leading-[0.95]"
+            title={venueName}
+          >
+            {venueName}
+          </h1>
         </div>
       </div>
 

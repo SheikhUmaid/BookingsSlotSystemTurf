@@ -7,32 +7,40 @@ import { useVenue } from "../../hooks/useVenue";
 export default function HomeHeader() {
     const { isAuthenticated } = useAuth();
     const [loginOpen, setLoginOpen] = useState(false);
-    const { venue, venueName } = useVenue();
+    const { venue, venueName, loading } = useVenue();
+    const subline = venue?.tagline || venue?.city;
 
     return (
         <>
-            <header className="flex items-center justify-between px-5 pt-5 pb-3">
-                {/* Logo / Arena Identity */}
-                <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-400/30 bg-emerald-400/10">
-                        <span className="material-symbols-outlined text-[16px] text-emerald-400">
+            <header className="flex items-start justify-between gap-3 px-5 pt-6 pb-4">
+                {/* Arena identity — the turf's own name is the hero brand */}
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-400/30 bg-emerald-400/10">
+                        <span className="material-symbols-outlined text-[22px] text-emerald-400">
                             sports_soccer
                         </span>
                     </div>
-                    <div>
-                        <p className="font-['Space_Grotesk'] text-[11px] font-bold uppercase tracking-[0.18em] text-white leading-tight">
-                            {venueName}
-                        </p>
-                        {(venue?.tagline || venue?.city) && (
-                            <p className="font-['Hanken_Grotesk'] text-[10px] text-on-surface-variant leading-tight">
-                                {venue.tagline || venue.city}
+                    <div className="min-w-0">
+                        {loading ? (
+                            <div className="h-7 w-40 animate-pulse rounded bg-white/10" aria-hidden="true" />
+                        ) : (
+                            <h1
+                                className="line-clamp-2 break-words font-['Barlow_Condensed'] text-[28px] font-bold uppercase leading-[0.95] tracking-wide text-white"
+                                title={venueName}
+                            >
+                                {venueName}
+                            </h1>
+                        )}
+                        {subline && (
+                            <p className="mt-1 truncate font-['Space_Grotesk'] text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-400/90">
+                                {subline}
                             </p>
                         )}
                     </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2 pt-1">
                     <button
                         type="button"
                         aria-label="Notifications"

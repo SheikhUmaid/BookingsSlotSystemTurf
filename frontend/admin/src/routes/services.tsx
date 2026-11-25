@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { CircleDot, Goal, Pencil, Plus, Target, Trash2, Trophy, Loader2 } from "lucide-react";
+import { Check, Pencil, Plus, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -18,10 +18,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PageHeader, Panel, selectCls } from "@/components/turf/ui-bits";
+import { PageHeader, Panel } from "@/components/turf/ui-bits";
 import { pageMeta } from "@/lib/meta";
 import { adminFetch } from "@/lib/api";
 import { useSubscription } from "@/lib/useSubscription";
+import { DEFAULT_SPORT_ICON, SPORT_ICONS, resolveSportIcon, sportIconLabel } from "@/lib/sportIcons";
 
 export const Route = createFileRoute("/services")({
   head: () => pageMeta("Services", "Manage the sports customers can book."),
@@ -42,12 +43,17 @@ interface ServicesResponse {
   total?: number;
 }
 
-const icons: Record<string, typeof Goal> = {
-  goal: Goal,
-  trophy: Trophy,
-  target: Target,
-  "circle-dot": CircleDot,
-};
+function SportGlyph({ name, className = "" }: { name: string; className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`material-symbols-outlined select-none leading-none ${className}`}
+      style={{ fontFamily: "'Material Symbols Outlined'", fontWeight: "normal", fontStyle: "normal", letterSpacing: "normal", textTransform: "none", whiteSpace: "nowrap", direction: "ltr", fontFeatureSettings: "'liga'" }}
+    >
+      {resolveSportIcon(name)}
+    </span>
+  );
+}
 
 function ServicesPage() {
   const queryClient = useQueryClient();
@@ -60,7 +66,7 @@ function ServicesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<ApiService | null>(null);
   const [deletingService, setDeletingService] = useState<ApiService | null>(null);
-  const [form, setForm] = useState({ name: "", description: "", icon: "goal" });
+  const [form, setForm] = useState({ name: "", description: "", icon: DEFAULT_SPORT_ICON });
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -79,7 +85,7 @@ function ServicesPage() {
 
   const openAddDialog = () => {
     setEditingService(null);
-    setForm({ name: "", description: "", icon: "goal" });
+    setForm({ name: "", description: "", icon: DEFAULT_SPORT_ICON });
     setDialogOpen(true);
   };
 
@@ -88,7 +94,7 @@ function ServicesPage() {
     setForm({
       name: service.name,
       description: service.description,
-      icon: service.icon || "goal",
+      icon: resolveSportIcon(service.icon),
     });
     setDialogOpen(true);
   };
@@ -125,7 +131,7 @@ function ServicesPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-services"] });
       setDialogOpen(false);
       setEditingService(null);
-      setForm({ name: "", description: "", icon: "goal" });
+      setForm({ name: "", description: "", icon: DEFAULT_SPORT_ICON });
     } catch (err: any) {
       toast.error(err.message || "Failed to save service");
     } finally {
@@ -188,12 +194,11 @@ function ServicesPage() {
               </Panel>
             ))
           : list.map((s) => {
-              const I = icons[s.icon] ?? Goal;
               return (
                 <Panel key={s._id} className="p-4 transition-shadow hover:shadow-card">
                   <div className="flex items-start justify-between">
                     <div className="grid size-10 place-items-center rounded-lg bg-primary-soft text-primary">
-                      <I className="size-5" />
+                      <SportGlyph name={s.icon} className="text-[22px]" />
                     </div>
                     <div className="flex gap-1">
                       <button
@@ -219,7 +224,7 @@ function ServicesPage() {
                     {s.description}
                   </p>
                   <div className="mt-3 text-[11.5px] text-muted-foreground">
-                    Icon: <code className="rounded bg-surface px-1">{s.icon}</code>
+                    Icon: {sportIconLabel(s.icon)}
                   </div>
                 </Panel>
               );
@@ -265,17 +270,34 @@ function ServicesPage() {
             </div>
             <div className="space-y-1.5">
               <Label>Icon</Label>
-              <select
-                value={form.icon}
-                onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                className={selectCls + " h-9 w-full"}
+              <div
+                role="radiogroup"
+                aria-label="Sport icon"
+                className="grid max-h-64 grid-cols-4 gap-1.5 overflow-y-auto rounded-md border p-1.5 sm:grid-cols-5"
               >
-                {Object.keys(icons).map((k) => (
-                  <option key={k} value={k}>
-                    {k}
-                  </option>
-                ))}
-              </select>
+                {SPORT_ICONS.map((opt) => {
+                  const selected = form.icon === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      title={opt.label}
+                      onClick={() => setForm({ ...form, icon: opt.value })}
+                      className={`relative flex flex-col items-center gap-1 rounded-md border px-1 py-2 text-[10.5px] leading-tight transition-colors ${
+                        selected
+                          ? "border-primary bg-primary-soft text-primary"
+                          : "border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      }`}
+                    >
+                      {selected && <Check className="absolute right-1 top-1 size-3" />}
+                      <SportGlyph name={opt.value} className="text-[24px]" />
+                      <span className="w-full truncate text-center">{opt.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
           <DialogFooter>

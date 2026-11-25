@@ -7,7 +7,12 @@ let venuePromise = null;
 const loadVenue = () => {
     if (!venuePromise) {
         venuePromise = fetchVenue()
-            .then((res) => res.data?.venue ?? null)
+            .then((res) => {
+                const v = res.data?.venue ?? null;
+                // Brand the browser tab / installed-app title with the turf's name.
+                if (v?.name) document.title = v.name;
+                return v;
+            })
             .catch(() => {
                 venuePromise = null; // allow a retry on next mount
                 return null;
@@ -22,16 +27,19 @@ const loadVenue = () => {
  */
 export const useVenue = () => {
     const [venue, setVenue] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         let cancelled = false;
         loadVenue().then((v) => {
-            if (!cancelled) setVenue(v);
+            if (cancelled) return;
+            setVenue(v);
+            setLoading(false);
         });
         return () => {
             cancelled = true;
         };
     }, []);
 
-    return { venue, venueName: venue?.name || "Turf" };
+    return { venue, venueName: venue?.name || "Turf", loading };
 };
