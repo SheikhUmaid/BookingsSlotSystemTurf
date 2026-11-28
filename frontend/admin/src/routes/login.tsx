@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { pageMeta } from "@/lib/meta";
 import { API_BASE } from "@/lib/api";
-import { ZINTH_URL, ZinthMark, ZinthWordmark } from "@/components/turf/brand";
+import { ZINTH_URL, TurfOSMark, TurfOSWordmark, ZinthWordmark } from "@/components/turf/brand";
 
 export const Route = createFileRoute("/login")({
   head: () => pageMeta("Admin Login", "Sign in to TurfOS by Zinth Labs — digital product studio."),
@@ -115,10 +115,10 @@ function LoginPage() {
         <div className="w-full max-w-md space-y-6">
           {/* Brand Header */}
           <div className="text-center space-y-2.5 lg:text-left">
-            <ZinthMark className="mx-auto size-12 text-[28px] lg:mx-0" />
+            <TurfOSMark className="mx-auto size-12 lg:mx-0" />
             <div>
-              <h1 className="font-display text-[34px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-[38px]">
-                TurfOS
+              <h1 className="flex justify-center lg:justify-start">
+                <TurfOSWordmark className="h-[32px] sm:h-[36px]" />
               </h1>
               <p className="mt-1 font-display text-[13px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 by <span className="text-primary">Zinth Labs</span>

@@ -18,16 +18,46 @@ export function ZinthMark({ className }: { className?: string }) {
   );
 }
 
+/**
+ * Official TurfOS "Field" symbol (white top, Zinth Orange bottom), shown on a black
+ * tile like the app icon so the white half stays visible on light backgrounds.
+ * Never recolour the symbol itself.
+ */
+export function TurfOSMark({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "grid size-8 shrink-0 place-items-center rounded-[22%] bg-[#0b0b0b]",
+        className,
+      )}
+    >
+      <img src="/turfos-symbol.svg" alt="" className="size-[72%]" />
+    </span>
+  );
+}
+
+/**
+ * Official TurfOS wordmark ("Turf" + orange "OS"). Uses the ink artwork on light
+ * backgrounds and the light artwork in dark mode, so "Turf" always stays readable.
+ */
+export function TurfOSWordmark({ className }: { className?: string }) {
+  return (
+    <span className={cn("inline-flex h-5 shrink-0", className)}>
+      <img src="/turfos-wordmark-ink.png" alt="TurfOS" className="h-full w-auto dark:hidden" />
+      <img src="/turfos-wordmark-light.png" alt="TurfOS" className="hidden h-full w-auto dark:block" />
+    </span>
+  );
+}
+
 /** Product lockup used in the sidebar / mobile drawer. */
 export function ProductLockup() {
   return (
     <div className="flex items-center gap-2.5">
-      <ZinthMark />
+      <TurfOSMark />
       <div className="leading-none">
-        <div className="font-display text-[19px] font-bold uppercase tracking-wide text-foreground">
-          TurfOS
-        </div>
-        <div className="mt-0.5 font-display text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <TurfOSWordmark className="h-[19px]" />
+        <div className="mt-1 font-display text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           by <span className="text-primary">Zinth Labs</span>
         </div>
       </div>
