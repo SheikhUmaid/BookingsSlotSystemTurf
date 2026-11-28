@@ -2,8 +2,12 @@ import axios from 'axios';
 
 
 
+// Turf backend API, e.g. https://api.yourturf.com/api (set in .env as VITE_API_URL).
+// Falls back to the local backend for development.
+export const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/+$/, "");
+
 const authAPI = axios.create({
-    baseURL: "http://localhost:5000/api", withCredentials: true,
+    baseURL: API_URL, withCredentials: true,
 });
 
 

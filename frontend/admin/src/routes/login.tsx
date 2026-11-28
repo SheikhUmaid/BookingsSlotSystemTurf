@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { pageMeta } from "@/lib/meta";
+import { API_BASE } from "@/lib/api";
 import { ZINTH_URL, ZinthMark, ZinthWordmark } from "@/components/turf/brand";
 
 export const Route = createFileRoute("/login")({
@@ -34,7 +35,7 @@ function LoginPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:5000/api/auth/login", {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

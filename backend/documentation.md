@@ -86,6 +86,8 @@ The backend reads environment variables via `dotenv/config`. These should be def
 | `RAZORPAY_KEY_SECRET`     | String | **Yes** | Razorpay private API secret.                                          | `Q5QtW0oamQWrtDSLxdbzfs4f`                 |
 | `RAZORPAY_WEBHOOK_SECRET` | String | **Yes** | Secret configured in the Razorpay Webhooks dashboard.                 | `my_webhook_secret_key`                    |
 | `PARTIAL_PAYMENT_PERCENT` | Number | Optional      | Percentage required when partial payment is selected. Default `30`. | `30`                                       |
+| `CORS_ORIGINS`            | String | **Yes** in production | Comma-separated frontend origins allowed to call the API (customer site and admin panel). Exact origins only — no path or trailing slash. Localhost is always allowed for development. | `https://yourturf.netlify.app,https://admin-yourturf.netlify.app` |
+| `NODE_ENV`                | String | **Yes** in production | Set to `production` on the server so login cookies are marked `Secure` (required for cross-domain cookies over HTTPS). | `production` |
 
 ---
 

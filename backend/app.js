@@ -37,11 +37,23 @@ import morgan from "morgan";
 
 const app = express();
 
+// Live frontends allowed to call this API, comma-separated, e.g.
+// CORS_ORIGINS=https://yourturf.netlify.app,https://admin-yourturf.netlify.app
+// Exact origins only: scheme + host (+ port), no path or trailing slash.
+const allowedOrigins = new Set(
+    (process.env.CORS_ORIGINS || "")
+        .split(",")
+        .map((o) => o.trim().replace(/\/+$/, ""))
+        .filter(Boolean)
+);
+
 app.use(
     cors({
         origin: (origin, callback) => {
             // Allow requests with no origin (mobile apps, curl, server-to-server)
             if (!origin) return callback(null, true);
+
+            if (allowedOrigins.has(origin)) return callback(null, true);
 
             // Allow any localhost/127.0.0.1 port in development or dev tunnels
             if (

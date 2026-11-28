@@ -1,4 +1,7 @@
-const BASE = "http://127.0.0.1:5000/api";
+// Turf backend API, e.g. https://api.yourturf.com/api (set in .env as VITE_API_URL).
+// Falls back to the local backend for development. The admin panel always talks to
+// the turf backend, never to the subscription registry directly.
+const BASE = (import.meta.env["VITE_API_URL"] || "http://127.0.0.1:5000/api").replace(/\/+$/, "");
 
 export function getToken(): string {
   // localStorage is only available in the browser, not during SSR

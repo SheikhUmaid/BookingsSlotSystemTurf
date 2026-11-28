@@ -1,0 +1,13 @@
+# Netlify site for the customer booking app. In Netlify set "Base directory" to frontend/turffrontend.
+# Also set VITE_API_URL in Site settings → Environment variables (see .env.example).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Single-page app: send every route (/book, /bookings, /profile…) to index.html
+# so refreshing or opening a deep link doesn't 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
